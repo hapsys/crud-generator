@@ -2,6 +2,7 @@ package ru.aeroflot.generator.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import ru.aeroflot.generator.config.AbstractGeneratorConfigProperties;
 
 @ConfigurationProperties(prefix = "generator")
 @Data
@@ -23,54 +24,26 @@ public class GeneratorConfigProperties {
     }
 
     @Data
-    public static class Entities {
-        private boolean enable;
-        private String  packages;
-        private String  template;
-        private String  suffix;
+    public static class Entities extends AbstractGeneratorConfigProperties {
     }
 
     @Data
-    public static class Repository {
-        private boolean enable;
-        private String  packages;
-        private String  template;
-        private String  suffix;
-        private String  savePartStart;
+    public static class Repository extends AbstractGeneratorConfigProperties {
     }
 
     @Data
-    public static class Model {
-        private boolean enable;
-        private boolean usePrimary;
-        private boolean generateData;
-        private String  packages;
-        private String  template;
-        private String  suffixModel;
-        private String  suffixData;
+    public static class Model extends AbstractGeneratorConfigProperties {
     }
 
     @Data
-    public static class Mapper {
-        private boolean enable;
-        private String  packages;
-        private String  template;
-        private String  suffix;
+    public static class Mapper extends AbstractGeneratorConfigProperties {
     }
 
     @Data
-    public static class Service {
-        private boolean enable;
-        private String  packages;
-        private String  template;
-        private String  suffix;
+    public static class Service extends AbstractGeneratorConfigProperties {
     }
 
     @Data
-    public static class Controller {
-        private boolean enable;
-        private String  packages;
-        private String  template;
-        private String  suffix;
+    public static class Controller extends AbstractGeneratorConfigProperties {
     }
 }

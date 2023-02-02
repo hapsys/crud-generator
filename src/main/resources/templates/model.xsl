@@ -5,12 +5,12 @@
 	<xsl:param name="table"/>
 	<xsl:param name="package"/>
 	<xsl:param name="step"/>
-	<xsl:param name="suffix-model"/>
+	<xsl:param name="suffix"/>
 	<xsl:param name="suffix-data"/>
 	<xsl:template match="/dataBaseStructure">
 		<xsl:choose>
-			<xsl:when test="$step = 'model'"><xsl:call-template name="createModel"/></xsl:when>
-			<xsl:when test="$step = 'model-data'"><xsl:call-template name="createData"/></xsl:when>
+			<xsl:when test="$step = 'process'"><xsl:call-template name="createModel"/></xsl:when>
+			<xsl:when test="$step = 'additional'"><xsl:call-template name="createData"/></xsl:when>
 		</xsl:choose>
 	</xsl:template>
 	<xsl:template name="createModel">package <xsl:value-of select="$package"/>;
@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
 @Data
-public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix-model"/> implements DictionaryInfo, Serializable  {
+public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> implements DictionaryInfo, Serializable  {
 	<xsl:for-each select="columns/entry">
 	<xsl:if test="string-length(value/@comment) != 0">
 	/** <xsl:value-of select="value/@comment" disable-output-escaping="yes"/> */</xsl:if>
@@ -50,7 +50,7 @@ import java.util.List;
 @NoArgsConstructor
 public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix-data"/> implements Serializable {
 
-	private List&lt;<xsl:value-of select="@className"/><xsl:value-of select="$suffix-model"/>&gt; <xsl:value-of select="@methodName"/><xsl:value-of select="$suffix-data"/>s;
+	private List&lt;<xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>&gt; <xsl:value-of select="@methodName"/><xsl:value-of select="$suffix-data"/>s;
 }
 </xsl:for-each>
 	</xsl:template>

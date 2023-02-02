@@ -33,7 +33,7 @@ generator:
     generate-data: true
     packages: ru.aeroflot.dict.v1.model
     template: src/main/resources/templates/model.xsl
-    suffix-model: V1Dto
+    suffix: V1Dto
     suffix-data: V1Data
   mapper:
     enable: true
