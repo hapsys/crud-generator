@@ -20,6 +20,9 @@
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$package"/>;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -29,7 +32,9 @@ import <xsl:value-of select="$dtoPackage"/>.<xsl:value-of select="$dtoClass"/>;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
 import <xsl:value-of select="$mapperPackage"/>.<xsl:value-of select="$mapperClass"/>;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
@@ -44,12 +49,27 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	public List&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>s() {
 		return mapper.toDTOs(repository.findAll());
 	}
+
+	public Map&lt;String, Object&gt; get<xsl:value-of select="@className"/>sPaging(int page, int size) {
+	Pageable pageable = PageRequest.of(page, size);
+	Page&lt;<xsl:value-of select="$entityClass"/>&gt; pageTuts = repository.findAll(pageable);
+	List&lt;<xsl:value-of select="$dtoClass"/>&gt; list = mapper.toDTOs(pageTuts.getContent());
+	Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
+	response.put("pageNum", pageTuts.getNumber());
+	response.put("pageSize", pageTuts.getSize());
+	response.put("total", pageTuts.getTotalPages());
+	response.put("airport", list);
+	return response;
+	}
+
+
 	<xsl:variable name="primary" select="columns/entry/value[@isPrimaryKey = 'true']"/>
 	public <xsl:value-of select="$dtoClass"/> getBy<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>) {
 		return mapper.toDTO(repository.findById(<xsl:value-of select="$primary/@methodName"/>).get());
 	}
 
 	<xsl:variable name="uniq_index" select="indexes/entry[(value/@isUniq = 'true' and count(value/columns[@isPrimaryKey = 'false']) != 0)]"/>
+	@Transactional
 	public void update<xsl:value-of select="@className"/>(<xsl:value-of select="$dtoClass"/> sourceDictDto) {
 
 		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; <xsl:value-of select="@methodName"/> = repository.<xsl:choose>
@@ -67,7 +87,10 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		//log.info("Updating existing Airport Dictionary: {}", sourceDictDto.get<xsl:value-of select="$uniq_index/value/columns/@className"/>());
 		repository.saveAsync(entity);
 	}
-
+	@Transactional
+	public void deleteById(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>) {
+		repository.deleteById(<xsl:value-of select="$primary/@methodName"/>);
+	}
 	<!--
 	<xsl:for-each select="indexes/entry[value/@isUniq = 'false' or count(value/columns[@isPrimaryKey = 'false']) != 0]">
 		<xsl:choose>

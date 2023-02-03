@@ -239,12 +239,31 @@ public class CommandProcessor implements CommandLineRunner {
                 props.put("mapperClass", mapperClassName);
                 props.put("serviceClass", serviceClassName);
                 props.put("step", "process");
-                String result = transformXML(document, transformer, props);
-                // Save result
+
                 String classFileName = structure.getSchemas().get(schemaName).getTable(tableName).getClassName() +
                         part.getSuffix() + ".java";
                 log.info("Filename: {}", classFileName);
                 File classFile = new File(pkgDir, classFileName);
+
+                if (Objects.nonNull(part.getSavePartStart())) {
+                    String save = "";
+                    String savePartStart = part.getSavePartStart();
+                    log.info("Check if file contains: {}", savePartStart);
+                    if (classFile.exists() && !savePartStart.isEmpty()) {
+                        String ctx = readFile(classFile);
+                        log.info("File contents: {}", ctx);
+                        List<String> matches = new ArrayList<>();
+                        if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
+                            //log.info("{}", matches);
+                            save = matches.get(1);
+                        }
+                    }
+                    props.put("save", save);
+                }
+
+
+                String result = transformXML(document, transformer, props);
+                // Save result
                 try (PrintWriter writer = new PrintWriter(classFile)) {
                     writer.print(result);
                 }

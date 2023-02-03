@@ -20,6 +20,7 @@ import lombok.Data;
 import java.io.Serializable;
 import ru.aeroflot.dict.api.model.DictionaryInfo;
 import java.time.ZonedDateTime;
+import com.fasterxml.jackson.databind.JsonNode;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
 @Data
@@ -27,7 +28,15 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	<xsl:for-each select="columns/entry">
 	<xsl:if test="string-length(value/@comment) != 0">
 	/** <xsl:value-of select="value/@comment" disable-output-escaping="yes"/> */</xsl:if>
-	private <xsl:value-of select="value/@shortType"/><xsl:text> </xsl:text><!-- xsl:if test="value/@isPrimaryKey='true'"><xsl:if test="value/@shortType='Integer'">source</xsl:if></xsl:if --><xsl:value-of select="value/@methodName"/>;
+<xsl:choose>
+	<xsl:when test="value/@baseType='jsonb'">private JsonNode <xsl:value-of select="value/@methodName"/>;
+	</xsl:when>
+	<xsl:otherwise>private <xsl:value-of select="value/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="value/@methodName"/>;
+	</xsl:otherwise>
+</xsl:choose>
+<!--
+	private <xsl:value-of select="value/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="value/@methodName"/>;
+-->
 </xsl:for-each>
 </xsl:for-each>}
 	</xsl:template>

@@ -12,14 +12,14 @@
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$package"/>;
 
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.scheduling.annotation.Async;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
 
 import java.util.List;
 import java.util.Optional;
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
-public interface <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> extends CrudRepository&lt;<xsl:value-of select="$entityClass"/>, <xsl:call-template name="pk_type"/>&gt; {
+public interface <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> extends PagingAndSortingRepository&lt;<xsl:value-of select="$entityClass"/>, <xsl:call-template name="pk_type"/>&gt; {
 
 	List &lt;<xsl:value-of select="$entityClass"/>&gt; findAll();<xsl:for-each select="indexes/entry[value/@isUniq = 'false' or count(value/columns[@isPrimaryKey = 'false']) != 0]">
 		<xsl:choose>

@@ -32,6 +32,9 @@ public class Column {
     private String shortType;
 
     @XmlAttribute
+    private String baseType;
+
+    @XmlAttribute
     private boolean isPrimaryKey;
     @XmlAttribute
     private String className;
@@ -42,10 +45,11 @@ public class Column {
     @XmlElement
     private ForeignKey foreignKey;
 
-    public Column(Table table, String name, String comment, boolean isNullable, boolean isAutoincrement) {
+    public Column(Table table, String name, String comment, String baseType, boolean isNullable, boolean isAutoincrement) {
         this.table = table;
         this.name = name;
         this.comment = comment;
+        this.baseType = baseType;
         this.isNullable = isNullable;
         this.isAutoincrement = isAutoincrement;
         //

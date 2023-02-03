@@ -11,12 +11,16 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
-      maximum-pool-size: 10
+      maximum-pool-size: 100
+      max-lifetime: 360000
+      connection-timeout: 360000
+      validation-timeout: 360000
 
 generator:
   root: /Projects/java/centurion/afl_default/ms-dict-development/server/src/main/java
   tables:
-    include: country, town, airport, currency, country_currency #country_zone_airport
+    include: # country #, town, airport, currency, country_currency #country_zone_airport
+    exclude: acl_class, acl_entry, acl_object_identity, acl_sid, work_activity_dict, work_activity_group_dict, work_activity_type_dict, work_activity_type_setting
   entities:
     enable: true
     packages: ru.aeroflot.dict.v1.entity
@@ -27,7 +31,7 @@ generator:
     packages: ru.aeroflot.dict.v1.repository
     template: src/main/resources/templates/repository.xsl
     suffix: V1Repository
-    save-part-start: \/\*\* User chages
+    save-part-start: \/\*\* User changes
   model:
     enable: true
     generate-data: true

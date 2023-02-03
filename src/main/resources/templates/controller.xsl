@@ -21,17 +21,12 @@
 	<xsl:param name="servicePackage"/>
 	<xsl:param name="serviceSuffix"/>
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$package"/>;
-
+<xsl:variable name="meta" select="document('src/main/resources/templates/meta-info.xml')/meta-data/table[@name=$table]"/>
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import <xsl:value-of select="$repositoryPackage"/>.<xsl:value-of select="$repositoryClass"/>;
 import <xsl:value-of select="$dtoPackage"/>.<xsl:value-of select="$dtoClass"/>;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
@@ -39,14 +34,19 @@ import <xsl:value-of select="$mapperPackage"/>.<xsl:value-of select="$mapperClas
 import <xsl:value-of select="$servicePackage"/>.<xsl:value-of select="$serviceClass"/>;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
+<xsl:variable name="mapping"><xsl:choose>
+	<xsl:when test="count($meta/controller/mapping) = 0"><xsl:value-of select="@name"/></xsl:when>
+	<xsl:otherwise><xsl:value-of select="$meta/controller/mapping/text()"/></xsl:otherwise>
+</xsl:choose></xsl:variable>
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/<xsl:value-of select="@name"/>")
+@RequestMapping("/api/v1")
 public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> {
 
 	private <xsl:value-of select="$serviceClass"/> service;
@@ -55,28 +55,39 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		this.service = service;
 	}
 
-	@GetMapping(value="/")
-	public List&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>s(){
-		return service.get<xsl:value-of select="@className"/>s();
+	@GetMapping(value="/<xsl:value-of select="$mapping"/>")
+	public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; get<xsl:value-of select="@className"/>s(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "25") int size) {
+		return new ResponseEntity&lt;&gt;(service.get<xsl:value-of select="@className"/>sPaging(page, size), HttpStatus.OK);
 	}
 
-	@GetMapping(value="/{id}")
-	public <xsl:value-of select="$dtoClass"/> get<xsl:value-of select="@className"/>By<xsl:value-of
+
+	@GetMapping(value="/<xsl:value-of select="$mapping"/>/{id}")
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>By<xsl:value-of
 		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(@PathVariable("id") <xsl:value-of
-		select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/> id){
+		select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/> id) {
 		<xsl:value-of select="$dtoClass"/> result = service.getBy<xsl:value-of
 		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(id);
-		return result;
+		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
-	@PostMapping(value="/")
-	public void add<xsl:value-of select="@className"/>(@Valid @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
+	@PostMapping(value="/<xsl:value-of select="$mapping"/>")
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; add<xsl:value-of select="@className"/>(@Valid @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
 		service.update<xsl:value-of select="@className"/>(dto);
+		return new ResponseEntity&lt;&gt;(HttpStatus.OK);
 	}
 
-	@PutMapping(value="/")
-	public void update<xsl:value-of select="@className"/>(@Valid @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
+	@PutMapping(value="/<xsl:value-of select="$mapping"/>")
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; update<xsl:value-of select="@className"/>(@Valid @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
 		service.update<xsl:value-of select="@className"/>(dto);
+		return new ResponseEntity&lt;&gt;(HttpStatus.OK);
+	}
+
+	@DeleteMapping(value="/<xsl:value-of select="$mapping"/>/{id}")
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; delete<xsl:value-of select="@className"/>By<xsl:value-of
+		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(@PathVariable("id") <xsl:value-of
+		select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/> id) {
+		service.deleteById(id);
+		return new ResponseEntity&lt;&gt;(HttpStatus.OK);
 	}
 
 </xsl:for-each>
