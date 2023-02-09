@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <meta-data>
+    <globals>
+        <validation>
+            <column name="create_user"/>
+            <column name="create_date"/>
+            <column name="update_user"/>
+            <column name="update_date"/>
+            <column name="is_deleted"/>
+        </validation>
+    </globals>
     <table name="country">
         <controller>
             <mapping>countries</mapping>
         </controller>
+    </table>
+    <table name="airport">
+        <controller>
+            <mapping>airports</mapping>
+        </controller>
+        <validation>
+            <column name="port_id">
+    @NotNull
+    @Size(min = 3, max = 3)
+            </column>
+        </validation>
     </table>
 </meta-data>

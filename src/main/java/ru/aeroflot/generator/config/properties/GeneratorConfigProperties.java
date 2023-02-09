@@ -8,6 +8,8 @@ import ru.aeroflot.generator.config.AbstractGeneratorConfigProperties;
 @Data
 public class GeneratorConfigProperties {
 
+    private String[] schemas;
+    private String export;
     private String root;
     private Tables tables;
     private Entities entities;

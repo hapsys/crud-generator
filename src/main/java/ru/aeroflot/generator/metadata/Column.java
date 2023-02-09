@@ -40,16 +40,20 @@ public class Column {
     private String className;
     @XmlAttribute
     private String methodName;
+
+    @XmlAttribute
+    private int size;
     //@XmlElement
     //private List<Index> indexes = new ArrayList<>();
     @XmlElement
     private ForeignKey foreignKey;
 
-    public Column(Table table, String name, String comment, String baseType, boolean isNullable, boolean isAutoincrement) {
+    public Column(Table table, String name, String comment, String baseType, int size, boolean isNullable, boolean isAutoincrement) {
         this.table = table;
         this.name = name;
         this.comment = comment;
         this.baseType = baseType;
+        this.size = size;
         this.isNullable = isNullable;
         this.isAutoincrement = isAutoincrement;
         //
