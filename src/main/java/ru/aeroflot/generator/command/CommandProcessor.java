@@ -68,7 +68,10 @@ public class CommandProcessor implements CommandLineRunner {
 
         DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
 
-        structure.addSchema("msdict").generateSchemas();
+        for (String schema: properties.getSchemas()) {
+            structure.addSchema(schema);
+        }
+        structure.generateSchemas();
 
         /**
          * Prepare paremateres
@@ -81,7 +84,9 @@ public class CommandProcessor implements CommandLineRunner {
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         jaxbMarshaller.setProperty(Marshaller.JAXB_ENCODING, "utf-8");
-        jaxbMarshaller.marshal(structure, new File("/structure.xml"));
+        if (!properties.getExport().isEmpty()) {
+            jaxbMarshaller.marshal(structure, new File(properties.getExport()));
+        }
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();

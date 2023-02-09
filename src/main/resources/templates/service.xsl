@@ -32,12 +32,15 @@ import <xsl:value-of select="$dtoPackage"/>.<xsl:value-of select="$dtoClass"/>;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
 import <xsl:value-of select="$mapperPackage"/>.<xsl:value-of select="$mapperClass"/>;
 
+import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
+@Validated
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -70,7 +73,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 
 	<xsl:variable name="uniq_index" select="indexes/entry[(value/@isUniq = 'true' and count(value/columns[@isPrimaryKey = 'false']) != 0)]"/>
 	@Transactional
-	public void update<xsl:value-of select="@className"/>(<xsl:value-of select="$dtoClass"/> sourceDictDto) {
+	public void update<xsl:value-of select="@className"/>(@Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
 
 		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; <xsl:value-of select="@methodName"/> = repository.<xsl:choose>
 			<xsl:when test="count($uniq_index) = 0">findById(sourceDictDto.get<xsl:value-of select="indexes/entry/value/columns[@isPrimaryKey = 'true']/@className"/>());</xsl:when>

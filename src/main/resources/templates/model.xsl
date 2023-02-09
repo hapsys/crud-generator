@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+				xmlns:csl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output encoding="utf-8" indent="yes" method="text" standalone="yes"/>
 	<xsl:param name="schema"/>
 	<xsl:param name="table"/>
@@ -17,17 +18,43 @@
 
 import lombok.Data;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import ru.aeroflot.dict.api.model.DictionaryInfo;
 import java.time.ZonedDateTime;
 import com.fasterxml.jackson.databind.JsonNode;
+import javax.validation.constraints.*;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
+<xsl:variable name="metaInfo" select="document('src/main/resources/templates/meta-info.xml')/meta-data"/>
+<xsl:variable name="meta" select="table[@name=$table]"/>
+@Schema(description = "<xsl:value-of select="@comment" disable-output-escaping="yes"/>")
 @Data
 public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> implements DictionaryInfo, Serializable  {
-	<xsl:for-each select="columns/entry">
-	<xsl:if test="string-length(value/@comment) != 0">
-	/** <xsl:value-of select="value/@comment" disable-output-escaping="yes"/> */</xsl:if>
+	<xsl:for-each select="columns/entry"><xsl:variable name="columnName" select="value/@name"/>
+	<xsl:if test="string-length(value/@comment) != 0"><!-- /** <xsl:value-of select="value/@comment" disable-output-escaping="yes"/> */ -->
+	@Schema(description = "<xsl:value-of select="value/@comment" disable-output-escaping="yes"/>")
+	</xsl:if>
+	<xsl:choose>
+		<xsl:when test="count($meta/validation/column[@name = $columnName]) != 0">
+	<xsl:value-of select="$meta/validation/column[@name = $columnName]/text()" disable-output-escaping="yes"/>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:choose>
+				<xsl:when test="count($metaInfo/globals/validation/column[@name = $columnName]) != 0">
+					<xsl:value-of select="$metaInfo/globals/validation/column[@name = $columnName]/text()" disable-output-escaping="yes"/>
+				</xsl:when>
+				<xsl:otherwise>
+			<xsl:if test="value/@isAutoincrement = 'false'">
+	<xsl:if test="value/@isNullable = 'false'">@NotNull
+				</xsl:if>
+	<xsl:if test="value/@isNullable = 'false' and value/@shortType = 'String'">@Size(min = 1, max = <xsl:value-of select="value/@size"/>)
+				</xsl:if>
+			</xsl:if>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:otherwise>
+	</xsl:choose>
 <xsl:choose>
 	<xsl:when test="value/@baseType='jsonb'">private JsonNode <xsl:value-of select="value/@methodName"/>;
 	</xsl:when>

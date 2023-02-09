@@ -18,6 +18,8 @@ spring:
 
 generator:
   root: /Projects/java/centurion/afl_default/ms-dict-development/server/src/main/java
+  export: /structure.xml
+  schemas: msdict
   tables:
     include: # country #, town, airport, currency, country_currency #country_zone_airport
     exclude: acl_class, acl_entry, acl_object_identity, acl_sid, work_activity_dict, work_activity_group_dict, work_activity_type_dict, work_activity_type_setting

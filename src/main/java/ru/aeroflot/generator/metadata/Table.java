@@ -59,10 +59,11 @@ public class Table {
                 String name = resultSet.getString("COLUMN_NAME");
                 String comment = resultSet.getString("REMARKS");
                 String baseType = resultSet.getString("TYPE_NAME");
+                int size = resultSet.getInt("COLUMN_SIZE");
                 boolean isNullable = !"NO".equals(resultSet.getString("IS_NULLABLE"));
                 boolean isAutoincrement = "YES".equals(resultSet.getString("IS_AUTOINCREMENT"));
 
-                Column column = new Column(this, name, comment, baseType, isNullable, isAutoincrement);
+                Column column = new Column(this, name, comment, baseType, size, isNullable, isAutoincrement);
                 columns.put(name, column);
             }
         }
