@@ -29,8 +29,8 @@ public interface <xsl:value-of select="@className"/><xsl:value-of select="$suffi
 	List&lt;<xsl:value-of select="$entityClass"/>&gt; findBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:otherwise>
 		</xsl:choose>
 </xsl:for-each>
-	@Async
-	default &lt;S extends <xsl:value-of select="$entityClass"/>&gt; S saveAsync(S entity) { return save(entity); }
+	//@Async
+	//default &lt;S extends <xsl:value-of select="$entityClass"/>&gt; S saveAsync(S entity) { return save(entity); }
 
 </xsl:for-each><xsl:value-of select="$save" disable-output-escaping="yes"/>}
 	</xsl:template>

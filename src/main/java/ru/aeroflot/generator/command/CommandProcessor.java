@@ -55,6 +55,7 @@ public class CommandProcessor implements CommandLineRunner {
     private boolean enableMapper = true;
     private boolean enableService = true;
     private boolean enableController = true;
+    private boolean enableMetadata = true;
 
     File root;
     @Override
@@ -145,6 +146,14 @@ public class CommandProcessor implements CommandLineRunner {
 
         // ---------------------------------------------------------------------------------------
         /**
+         * Generate Metadata
+         */
+        if (enableMetadata && properties.getMeta().isEnable()) {
+            processParts(properties.getMeta(), document);
+        }
+
+        // ---------------------------------------------------------------------------------------
+        /**
          * Generate Controller
          */
         if (enableController && properties.getController().isEnable()) {
@@ -191,6 +200,12 @@ public class CommandProcessor implements CommandLineRunner {
                 case "--disableController":
                     enableController = false;
                     break;
+                case "--enableMetadata":
+                    enableMetadata = true;
+                    break;
+                case "--disableMetadata":
+                    enableMetadata = false;
+                    break;
                 default:
             }
         }
@@ -215,6 +230,8 @@ public class CommandProcessor implements CommandLineRunner {
         String mapperSuffix = properties.getMapper().getSuffix();
         String servicePackageName = properties.getService().getPackages();
         String serviceSuffix = properties.getService().getSuffix();
+        String metaPackageName = properties.getMeta().getPackages();
+        String metaSuffix = properties.getMeta().getSuffix();
         props.put("entityPackage", entityPackageName);
         props.put("entitySuffix", entitySuffix);
         props.put("dtoPackage", dtoPackageName);
@@ -225,6 +242,8 @@ public class CommandProcessor implements CommandLineRunner {
         props.put("mapperSuffix", mapperSuffix);
         props.put("servicePackage", servicePackageName);
         props.put("serviceSuffix", serviceSuffix);
+        props.put("metaPackage", metaPackageName);
+        props.put("metaSuffix", metaSuffix);
         // Load xslt template file
         Transformer transformer = getTransformer(part.getTemplate());
 
@@ -237,12 +256,14 @@ public class CommandProcessor implements CommandLineRunner {
                 String repositoryClassName = className + properties.getRepository().getSuffix();
                 String mapperClassName = className + mapperSuffix;
                 String serviceClassName = className + serviceSuffix;
+                String metaClassName = className + metaSuffix;
                 props.put("table", tableName);
                 props.put("entityClass", entityClassName);
                 props.put("dtoClass", dtoClassName);
                 props.put("repositoryClass", repositoryClassName);
                 props.put("mapperClass", mapperClassName);
                 props.put("serviceClass", serviceClassName);
+                props.put("metaClass", metaClassName);
                 props.put("step", "process");
 
                 String classFileName = structure.getSchemas().get(schemaName).getTable(tableName).getClassName() +

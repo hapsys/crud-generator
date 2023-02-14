@@ -18,6 +18,7 @@ public class GeneratorConfigProperties {
     private Mapper mapper;
     private Service service;
     private Controller controller;
+    private Meta meta;
 
     @Data
     public static class Tables {
@@ -47,5 +48,9 @@ public class GeneratorConfigProperties {
 
     @Data
     public static class Controller extends AbstractGeneratorConfigProperties {
+    }
+
+    @Data
+    public static class Meta extends AbstractGeneratorConfigProperties {
     }
 }

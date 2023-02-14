@@ -51,6 +51,11 @@ generator:
     packages: ru.aeroflot.dict.v1.service
     template: src/main/resources/templates/service.xsl
     suffix: V1Service
+  meta:
+    enable: true
+    packages: ru.aeroflot.dict.v1.meta
+    template: src/main/resources/templates/meta.xsl
+    suffix: V1Meta
   controller:
     enable: true
     packages: ru.aeroflot.dict.v1.controller

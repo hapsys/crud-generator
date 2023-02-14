@@ -46,20 +46,22 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 				</xsl:when>
 				<xsl:otherwise>
 			<xsl:if test="value/@isAutoincrement = 'false'">
-	<xsl:if test="value/@isNullable = 'false'">@NotNull
-				</xsl:if>
-	<xsl:if test="value/@isNullable = 'false' and value/@shortType = 'String'">@Size(min = 1, max = <xsl:value-of select="value/@size"/>)
-				</xsl:if>
+	<xsl:if test="value/@isNullable = 'false'">
+	@NotNull</xsl:if>
+	<xsl:if test="value/@isNullable = 'false' and value/@shortType = 'String'">
+	@Size(min = 1, max = <xsl:value-of select="value/@size"/>)</xsl:if>
+	<xsl:if test="value/@isNullable = 'true' and value/@shortType = 'String'">
+	@Size(max = <xsl:value-of select="value/@size"/>)</xsl:if>
 			</xsl:if>
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:otherwise>
 	</xsl:choose>
 <xsl:choose>
-	<xsl:when test="value/@baseType='jsonb'">private JsonNode <xsl:value-of select="value/@methodName"/>;
-	</xsl:when>
-	<xsl:otherwise>private <xsl:value-of select="value/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="value/@methodName"/>;
-	</xsl:otherwise>
+	<xsl:when test="value/@baseType='jsonb'">
+	private JsonNode <xsl:value-of select="value/@methodName"/>;</xsl:when>
+	<xsl:otherwise>
+	private <xsl:value-of select="value/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="value/@methodName"/>;</xsl:otherwise>
 </xsl:choose>
 <!--
 	private <xsl:value-of select="value/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="value/@methodName"/>;

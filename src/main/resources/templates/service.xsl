@@ -38,6 +38,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import ru.aeroflot.dict.validation.constraints.Constraint;
+import ru.aeroflot.dict.validation.constraints.ConstraintType;
+import ru.aeroflot.dict.validation.constraints.ConstraintsHolder;
+
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
 @Validated
@@ -48,6 +52,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 
 	private final <xsl:value-of select="$repositoryClass"/> repository;
 	private final <xsl:value-of select="$mapperClass"/> mapper;
+	private final ConstraintsHolder constraintsHolder;
 
 	public List&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>s() {
 		return mapper.toDTOs(repository.findAll());
@@ -58,10 +63,10 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	Page&lt;<xsl:value-of select="$entityClass"/>&gt; pageTuts = repository.findAll(pageable);
 	List&lt;<xsl:value-of select="$dtoClass"/>&gt; list = mapper.toDTOs(pageTuts.getContent());
 	Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
-	response.put("pageNum", pageTuts.getNumber());
+	response.put("pageNum", pageTuts.getNumber() + 1);
 	response.put("pageSize", pageTuts.getSize());
 	response.put("total", pageTuts.getTotalPages());
-	response.put("airport", list);
+	response.put("data", list);
 	return response;
 	}
 
@@ -82,28 +87,40 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		if (<xsl:value-of select="@methodName"/>.isEmpty()) {
 			//log.info("Airport is not found, created new Airport by id: {}", sourceDictDto.get<xsl:value-of select="$uniq_index/value/columns/@className"/>());
 			<xsl:value-of select="$entityClass"/> entity = mapper.toNewEntity(sourceDictDto);
-			repository.saveAsync(entity);
+			repository.save(entity);
 			return;
 		}
 		<xsl:value-of select="$entityClass"/> entity =  <xsl:value-of select="@methodName"/>.get();
 		entity = mapper.toEntity(entity, sourceDictDto);
 		//log.info("Updating existing Airport Dictionary: {}", sourceDictDto.get<xsl:value-of select="$uniq_index/value/columns/@className"/>());
-		repository.saveAsync(entity);
+		repository.save(entity);
 	}
 	@Transactional
-	public void deleteById(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>) {
+	public void update<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>, @Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
+		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; <xsl:value-of select="@methodName"/> = repository.findById(<xsl:value-of select="$primary/@methodName"/>);
+		if (!<xsl:value-of select="@methodName"/>.isEmpty()) {
+			sourceDictDto.set<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@methodName"/>);
+			<xsl:value-of select="$entityClass"/> entity = <xsl:value-of select="@methodName"/>.get();
+			entity = mapper.toEntity(entity, sourceDictDto);
+			repository.save(entity);
+		} else {
+			// new Exception
+		}
+	}
+
+	@Transactional
+	public void create<xsl:value-of select="@className"/>(@Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
+		<xsl:for-each select="indexes/entry/value[@isUniq = 'true']">
+		constraintsHolder.put(new Constraint("<xsl:value-of select="@name"/>", ConstraintType.UNIQUE_KEY, new String[]{<xsl:call-template name="names"/>}, new Object[]{<xsl:call-template name="values"/>}));
+		</xsl:for-each>
+		<xsl:if test="$primary/@isAutoincrement = 'true'">sourceDictDto.set<xsl:value-of select="$primary/@className"/>(null);</xsl:if>
+		repository.save(mapper.toNewEntity(sourceDictDto));
+	}
+
+	@Transactional
+	public void delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>) {
 		repository.deleteById(<xsl:value-of select="$primary/@methodName"/>);
 	}
-	<!--
-	<xsl:for-each select="indexes/entry[value/@isUniq = 'false' or count(value/columns[@isPrimaryKey = 'false']) != 0]">
-		<xsl:choose>
-			<xsl:when test="value/@isUniq = 'true'">
-				Optional&lt;<xsl:value-of select="$entityClass"/>&gt; findOneBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:when>
-			<xsl:otherwise>
-				List&lt;<xsl:value-of select="$entityClass"/>&gt; findBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:otherwise>
-		</xsl:choose>
-	</xsl:for-each>
-	-->
 </xsl:for-each>
 }
 	</xsl:template>
@@ -128,6 +145,21 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 			<xsl:if test="position() != 1">, </xsl:if>
 			<xsl:value-of select="@shortType"/><xsl:text> </xsl:text><xsl:value-of select="@methodName"/>
 		</xsl:for-each>
+	</xsl:template>
+	<!--
+    //
+    //
+    //
+    -->
+	<xsl:template name="names"><xsl:for-each select="columns"><xsl:if test="position() != 1">, </xsl:if>"<xsl:value-of select="@name"/>"</xsl:for-each>
+	</xsl:template>
+	<!--
+    //
+    //
+    //
+    -->
+	<xsl:template name="values">
+		<xsl:for-each select="columns"><xsl:if test="position() != 1">, </xsl:if>sourceDictDto.get<xsl:value-of select="@className"/>()</xsl:for-each>
 	</xsl:template>
 	<!--
     //
