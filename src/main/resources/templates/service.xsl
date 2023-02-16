@@ -65,7 +65,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();
 	response.put("pageNum", pageTuts.getNumber() + 1);
 	response.put("pageSize", pageTuts.getSize());
-	response.put("total", pageTuts.getTotalPages());
+	response.put("total", pageTuts.getTotalElements());
 	response.put("data", list);
 	return response;
 	}
