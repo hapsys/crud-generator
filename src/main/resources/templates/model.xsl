@@ -27,7 +27,7 @@ import javax.validation.constraints.*;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
 <xsl:variable name="metaInfo" select="document('src/main/resources/templates/meta-info.xml')/meta-data"/>
-<xsl:variable name="meta" select="table[@name=$table]"/>
+<xsl:variable name="meta" select="$metaInfo/table[@name=$table]"/>
 @Schema(description = "<xsl:value-of select="@comment" disable-output-escaping="yes"/>")
 @Data
 public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> implements DictionaryInfo, Serializable  {

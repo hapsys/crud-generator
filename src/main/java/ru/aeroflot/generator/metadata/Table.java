@@ -50,9 +50,9 @@ public class Table {
 
     public void generateColumns() throws Exception {
 
-        DataSource dataSource = GeneratorContext.instance.getDataSource();
-        Connection connection = dataSource.getConnection();
-        DatabaseMetaData metaData = connection.getMetaData();
+        Connection connection = GeneratorContext.instance.getConnection();
+        DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
+
 
         try (ResultSet resultSet = metaData.getColumns(null, this.schema.getName(), getName(), null)) {
             while(resultSet.next()) {
@@ -108,6 +108,32 @@ public class Table {
                     indexes.put(name, index);
                 }
                 index.getColumns().add(getColumn(columnName));
+            }
+        }
+    }
+
+    public void generateForeignKeys(DataBaseStructure structure) throws Exception {
+        DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
+        try (ResultSet resultSet = metaData.getImportedKeys(null, schema.getName(), getName())) {
+            while(resultSet.next()) {
+                //ResultSetMetaData meta = resultSet.getMetaData();
+                //String sourceSchema = meta.getCo
+                String fkName = resultSet.getString("fk_name");
+                String sourceSchema = resultSet.getString("pktable_schem");
+                String sourceTable = resultSet.getString("pktable_name");
+                String sourceColumn = resultSet.getString("pkcolumn_name");
+                Column source = null;
+                Schema columnSchema = structure.getSchemas().get(sourceSchema);
+                if (columnSchema != null) {
+                    Table columnTable = columnSchema.getTable(sourceTable);
+                    if (columnTable != null) {
+                        source = columnTable.getColumn(sourceColumn);
+                    }
+                }
+                if (source != null) {
+                    getColumn(resultSet.getString("fkcolumn_name")).setForeignKey(new ForeignKey(fkName, sourceSchema, sourceTable, source));
+                }
+
             }
         }
     }

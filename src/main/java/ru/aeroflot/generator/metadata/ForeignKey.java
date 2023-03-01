@@ -15,6 +15,10 @@ import lombok.NoArgsConstructor;
 public class ForeignKey {
     @XmlAttribute
     private String name;
+    @XmlAttribute
+    private String schema;
+    @XmlAttribute
+    private String table;
     @XmlElement
     private Column column;
 }

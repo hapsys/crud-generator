@@ -27,4 +27,10 @@ public class DataBaseStructure {
             schema.generateTables();
         }
     }
+
+    public void generateForeignKeys() throws Exception {
+        for (Schema schema: schemas.values()) {
+            schema.generateForeignKeys(this);
+        }
+    }
 }

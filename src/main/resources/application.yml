@@ -11,7 +11,7 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
-      maximum-pool-size: 100
+      maximum-pool-size: 10
       max-lifetime: 360000
       connection-timeout: 360000
       validation-timeout: 360000
@@ -36,7 +36,7 @@ generator:
     save-part-start: \/\*\* User changes
   model:
     enable: true
-    generate-data: true
+    generate-data: false
     packages: ru.aeroflot.dict.v1.model
     template: src/main/resources/templates/model.xsl
     suffix: V1Dto

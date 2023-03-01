@@ -28,20 +28,22 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.*;
 
 @Slf4j
 @Component
 public class CommandProcessor implements CommandLineRunner {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    //@Autowired
+    //private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private DataSource dataSource;
+    private Connection connection;
+
+    @Autowired
+    private DatabaseMetaData metaData;
 
     @Autowired
     private GeneratorConfigProperties properties;
@@ -65,14 +67,31 @@ public class CommandProcessor implements CommandLineRunner {
         parseCommandLine(args);
 
         GeneratorContext.instance.setProperties(properties);
-        GeneratorContext.instance.setDataSource(dataSource);
+        GeneratorContext.instance.setConnection(connection);
+        GeneratorContext.instance.setMetaData(metaData);
 
-        DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
+        //DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
+
+        /*
+        try (ResultSet resultSet = metaData.getImportedKeys(null, "msdict", "airport")) {
+            while(resultSet.next()) {
+                ResultSetMetaData meta = resultSet.getMetaData();
+                for(int i = 1; i < meta.getColumnCount(); i++) {
+                    log.info("Index \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
+                }
+                log.info("---------------------------------------------------------------------");
+            }
+        }
+        System.exit(0);
+
+         */
 
         for (String schema: properties.getSchemas()) {
             structure.addSchema(schema);
         }
         structure.generateSchemas();
+
+        structure.generateForeignKeys();
 
         /**
          * Prepare paremateres

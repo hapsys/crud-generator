@@ -24,5 +24,14 @@
     @Size(min = 3, max = 3)
             </column>
         </validation>
+        <sort>
+            <column name="port_id" default="true"/>
+            <column name="town_id"/>
+            <column name="country_id"/>
+        </sort>
+        <filter>
+            <column name="town_id"/>
+            <column name="country_id"/>
+        </filter>
     </table>
 </meta-data>

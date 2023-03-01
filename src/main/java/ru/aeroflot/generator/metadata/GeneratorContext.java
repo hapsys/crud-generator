@@ -4,7 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.aeroflot.generator.config.properties.GeneratorConfigProperties;
 
-import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 
 
 public enum GeneratorContext {
@@ -13,5 +14,8 @@ public enum GeneratorContext {
     @Getter @Setter
     private GeneratorConfigProperties properties;
     @Getter @Setter
-    private DataSource dataSource;
+    private Connection connection;
+    @Getter @Setter
+    private DatabaseMetaData metaData;
+
 }

@@ -41,13 +41,12 @@ public class Schema {
     public void generateTables() throws Exception {
 
         props = GeneratorContext.instance.getProperties().getTables();
-        dataSource = GeneratorContext.instance.getDataSource();
 
         List<String> include = props.getInclude() != null? Arrays.asList(props.getInclude()): new ArrayList<>();
         List<String> exclude = props.getExclude() != null? Arrays.asList(props.getExclude()): new ArrayList<>();
 
-        Connection connection = dataSource.getConnection();
-        DatabaseMetaData metaData = connection.getMetaData();
+        //Connection connection = GeneratorContext.instance.getConnection();
+        DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
 
         try (ResultSet tables = metaData.getTables(null, this.getName(), null, new String[]{"TABLE"})) {
             while(tables.next()) {
@@ -69,5 +68,11 @@ public class Schema {
             table.generateColumns();
         }
 
+    }
+
+    public void generateForeignKeys(DataBaseStructure structure) throws Exception {
+        for (Table table: tables.values()) {
+            table.generateForeignKeys(structure);
+        }
     }
 }
