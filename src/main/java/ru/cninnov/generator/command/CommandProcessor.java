@@ -1,22 +1,18 @@
-package ru.aeroflot.generator.command;
+package ru.cninnov.generator.command;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
-import ru.aeroflot.generator.config.AbstractGeneratorConfigProperties;
-import ru.aeroflot.generator.config.properties.GeneratorConfigProperties;
-import ru.aeroflot.generator.metadata.DataBaseStructure;
-import ru.aeroflot.generator.metadata.GeneratorContext;
-import ru.aeroflot.generator.metadata.Schema;
-import ru.aeroflot.generator.metadata.Table;
-import ru.aeroflot.generator.utils.RegexpUtils;
+import ru.cninnov.generator.config.AbstractGeneratorConfigProperties;
+import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
+import ru.cninnov.generator.metadata.DataBaseStructure;
+import ru.cninnov.generator.metadata.GeneratorContext;
+import ru.cninnov.generator.utils.RegexpUtils;
 
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -30,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.*;
 
 @Slf4j
@@ -73,17 +71,17 @@ public class CommandProcessor implements CommandLineRunner {
         //DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
 
         /*
-        try (ResultSet resultSet = metaData.getImportedKeys(null, "msdict", "airport")) {
+
+        try (ResultSet resultSet = metaData.getColumns(null, "msdict", "country", null)) {
             while(resultSet.next()) {
                 ResultSetMetaData meta = resultSet.getMetaData();
                 for(int i = 1; i < meta.getColumnCount(); i++) {
-                    log.info("Index \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
+                    log.info("Table \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
                 }
                 log.info("---------------------------------------------------------------------");
             }
         }
         System.exit(0);
-
          */
 
         for (String schema: properties.getSchemas()) {
@@ -104,8 +102,9 @@ public class CommandProcessor implements CommandLineRunner {
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         jaxbMarshaller.setProperty(Marshaller.JAXB_ENCODING, "utf-8");
-        if (!properties.getExport().isEmpty()) {
-            jaxbMarshaller.marshal(structure, new File(properties.getExport()));
+        String export = properties.getExport();
+        if (export != null && !export.isEmpty()) {
+            jaxbMarshaller.marshal(structure, new File(export));
         }
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

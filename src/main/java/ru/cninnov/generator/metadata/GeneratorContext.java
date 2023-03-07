@@ -1,8 +1,8 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.aeroflot.generator.config.properties.GeneratorConfigProperties;
+import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

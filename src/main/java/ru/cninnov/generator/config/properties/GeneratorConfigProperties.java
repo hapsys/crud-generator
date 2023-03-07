@@ -1,8 +1,8 @@
-package ru.aeroflot.generator.config.properties;
+package ru.cninnov.generator.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import ru.aeroflot.generator.config.AbstractGeneratorConfigProperties;
+import ru.cninnov.generator.config.AbstractGeneratorConfigProperties;
 
 @ConfigurationProperties(prefix = "generator")
 @Data

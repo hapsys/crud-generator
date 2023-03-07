@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -8,22 +8,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Index {
+public class ForeignKey {
     @XmlAttribute
     private String name;
     @XmlAttribute
-    private boolean isUniq;
+    private String schema;
+    @XmlAttribute
+    private String table;
     @XmlElement
-    private List<Column> columns = new ArrayList<>();
-
-    public Index(String name, boolean isUniq) {
-        this.name = name;
-        this.isUniq = isUniq;
-    }
+    private Column column;
 }

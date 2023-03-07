@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.utils;
+package ru.cninnov.generator.utils;
 
 public class Utils {
     public static String generateName(String name, boolean isMethod) {

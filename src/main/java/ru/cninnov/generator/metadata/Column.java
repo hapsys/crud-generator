@@ -1,13 +1,10 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import ru.aeroflot.generator.utils.Utils;
-
-import java.util.ArrayList;
-import java.util.List;
+import ru.cninnov.generator.utils.Utils;
 
 @Data
 @NoArgsConstructor
@@ -43,12 +40,15 @@ public class Column {
 
     @XmlAttribute
     private int size;
+
+    @XmlAttribute
+    private String defaultValue;
     //@XmlElement
     //private List<Index> indexes = new ArrayList<>();
     @XmlElement
     private ForeignKey foreignKey;
 
-    public Column(Table table, String name, String comment, String baseType, int size, boolean isNullable, boolean isAutoincrement) {
+    public Column(Table table, String name, String comment, String baseType, int size, boolean isNullable, boolean isAutoincrement, String defaultValue) {
         this.table = table;
         this.name = name;
         this.comment = comment;
@@ -56,6 +56,7 @@ public class Column {
         this.size = size;
         this.isNullable = isNullable;
         this.isAutoincrement = isAutoincrement;
+        this.defaultValue = defaultValue;
         //
         this.className = Utils.generateClassName(name);
         this.methodName = Utils.generateMethodName(name);

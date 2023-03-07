@@ -1,13 +1,12 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.aeroflot.generator.config.properties.GeneratorConfigProperties;
+import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.*;

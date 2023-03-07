@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.config;
+package ru.cninnov.generator.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

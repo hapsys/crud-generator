@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;

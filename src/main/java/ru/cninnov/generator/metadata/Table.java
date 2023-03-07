@@ -1,13 +1,12 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import ru.aeroflot.generator.utils.Utils;
+import ru.cninnov.generator.utils.Utils;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -60,10 +59,11 @@ public class Table {
                 String comment = resultSet.getString("REMARKS");
                 String baseType = resultSet.getString("TYPE_NAME");
                 int size = resultSet.getInt("COLUMN_SIZE");
+                String columnDef = resultSet.getString("COLUMN_DEF");
                 boolean isNullable = !"NO".equals(resultSet.getString("IS_NULLABLE"));
                 boolean isAutoincrement = "YES".equals(resultSet.getString("IS_AUTOINCREMENT"));
 
-                Column column = new Column(this, name, comment, baseType, size, isNullable, isAutoincrement);
+                Column column = new Column(this, name, comment, baseType, size, isNullable, isAutoincrement, columnDef);
                 columns.put(name, column);
             }
         }
