@@ -49,14 +49,6 @@ public class CommandProcessor implements CommandLineRunner {
     @Autowired
     private DataBaseStructure structure;
 
-    private boolean enableEntities = true;
-    private boolean enableRepository = true;
-    private boolean enableModel = true;
-    private boolean enableMapper = true;
-    private boolean enableService = true;
-    private boolean enableController = true;
-    private boolean enableMetadata = true;
-
     File root;
     @Override
     public void run(String... args) throws Exception {
@@ -76,9 +68,9 @@ public class CommandProcessor implements CommandLineRunner {
             while(resultSet.next()) {
                 ResultSetMetaData meta = resultSet.getMetaData();
                 for(int i = 1; i < meta.getColumnCount(); i++) {
-                    log.info("Table \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
+                    log.debug("Table \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
                 }
-                log.info("---------------------------------------------------------------------");
+                log.debug("---------------------------------------------------------------------");
             }
         }
         System.exit(0);
@@ -124,7 +116,7 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Entities
          */
-        if (enableEntities && properties.getEntities().isEnable()) {
+        if (properties.getEntities().isEnable()) {
             processParts(properties.getEntities(), document);
         }
 
@@ -133,7 +125,7 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Repository
          */
-        if (enableRepository && properties.getRepository().isEnable()) {
+        if (properties.getRepository().isEnable()) {
             processParts(properties.getRepository(), document);
         }
 
@@ -141,7 +133,7 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Models
          */
-        if (enableModel && properties.getModel().isEnable()) {
+        if (properties.getModel().isEnable()) {
             processParts(properties.getModel(), document);
         }
 
@@ -150,7 +142,7 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Mappers
          */
-        if (enableMapper && properties.getMapper().isEnable()) {
+        if (properties.getMapper().isEnable()) {
             processParts(properties.getMapper(), document);
         }
 
@@ -158,7 +150,7 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Service
          */
-        if (enableService && properties.getService().isEnable()) {
+        if (properties.getService().isEnable()) {
             processParts(properties.getService(), document);
         }
 
@@ -166,7 +158,7 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Metadata
          */
-        if (enableMetadata && properties.getMeta().isEnable()) {
+        if (properties.getMeta().isEnable()) {
             processParts(properties.getMeta(), document);
         }
 
@@ -174,57 +166,65 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Generate Controller
          */
-        if (enableController && properties.getController().isEnable()) {
+        if (properties.getController().isEnable()) {
             processParts(properties.getController(), document);
         }
     }
 
     private void parseCommandLine(String[] cmdLine) {
-        for(String cmd: cmdLine) {
-            switch (cmd) {
-                case "--enableEntities":
-                    enableEntities = true;
-                    break;
-                case "--disableEntities":
-                    enableEntities = false;
-                    break;
-                case "--enableRepository":
-                    enableRepository = true;
-                    break;
-                case "--disableRepository":
-                    enableRepository = false;
-                    break;
-                case "--enableModel":
-                    enableModel = true;
-                    break;
-                case "--disableModel":
-                    enableModel = false;
-                    break;
-                case "--enableMapper":
-                    enableMapper = true;
-                    break;
-                case "--disableMapper":
-                    enableMapper = false;
-                    break;
-                case "--enableService":
-                    enableService = true;
-                    break;
-                case "--disableService":
-                    enableService = false;
-                    break;
-                case "--enableController":
-                    enableController = true;
-                    break;
-                case "--disableController":
-                    enableController = false;
-                    break;
-                case "--enableMetadata":
-                    enableMetadata = true;
-                    break;
-                case "--disableMetadata":
-                    enableMetadata = false;
-                    break;
-                default:
+        for(int i=0; i < cmdLine.length; i++) {
+            String cmd = cmdLine[i];
+            if ("--root".equals(cmd)) {
+                if (i < cmdLine.length - 1) {
+                    i++;
+                    properties.setRoot(cmdLine[i]);
+                }
+            } else {
+                switch (cmd) {
+                    case "--enableEntities":
+                        properties.getEntities().setEnable(true);
+                        break;
+                    case "--disableEntities":
+                        properties.getEntities().setEnable(false);
+                        break;
+                    case "--enableRepository":
+                        properties.getRepository().setEnable(true);
+                        break;
+                    case "--disableRepository":
+                        properties.getRepository().setEnable(false);
+                        break;
+                    case "--enableModel":
+                        properties.getModel().setEnable(true);
+                        break;
+                    case "--disableModel":
+                        properties.getModel().setEnable(false);
+                        break;
+                    case "--enableMapper":
+                        properties.getMapper().setEnable(true);
+                        break;
+                    case "--disableMapper":
+                        properties.getMapper().setEnable(false);
+                        break;
+                    case "--enableService":
+                        properties.getService().setEnable(true);
+                        break;
+                    case "--disableService":
+                        properties.getService().setEnable(false);
+                        break;
+                    case "--enableController":
+                        properties.getController().setEnable(true);
+                        break;
+                    case "--disableController":
+                        properties.getController().setEnable(false);
+                        break;
+                    case "--enableMetadata":
+                        properties.getMeta().setEnable(true);
+                        break;
+                    case "--disableMetadata":
+                        properties.getMeta().setEnable(false);
+                        break;
+                    default:
+                }
             }
         }
     }
@@ -286,19 +286,19 @@ public class CommandProcessor implements CommandLineRunner {
 
                 String classFileName = structure.getSchemas().get(schemaName).getTable(tableName).getClassName() +
                         part.getSuffix() + ".java";
-                log.info("Filename: {}", classFileName);
+                log.debug("Filename: {}", classFileName);
                 File classFile = new File(pkgDir, classFileName);
 
                 if (Objects.nonNull(part.getSavePartStart())) {
                     String save = "";
                     String savePartStart = part.getSavePartStart();
-                    log.info("Check if file contains: {}", savePartStart);
+                    log.debug("Check if file contains: {}", savePartStart);
                     if (classFile.exists() && !savePartStart.isEmpty()) {
                         String ctx = readFile(classFile);
-                        log.info("File contents: {}", ctx);
+                        log.debug("File contents: {}", ctx);
                         List<String> matches = new ArrayList<>();
                         if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
-                            //log.info("{}", matches);
+                            //log.debug("{}", matches);
                             save = matches.get(1);
                         }
                     }
@@ -311,7 +311,7 @@ public class CommandProcessor implements CommandLineRunner {
                 try (PrintWriter writer = new PrintWriter(classFile)) {
                     writer.print(result);
                 }
-                log.info("{}", result);
+                log.debug("{}", result);
                 if (part.isGenerateData()) {
                     props.put("step", "additional");
 
@@ -319,12 +319,12 @@ public class CommandProcessor implements CommandLineRunner {
                     // Save result
                     classFileName = structure.getSchemas().get(schemaName).getTable(tableName).getClassName() +
                             part.getSuffixData() + ".java";
-                    //log.info("Filename: {}", classFileName);
+                    //log.debug("Filename: {}", classFileName);
                     classFile = new File(pkgDir, classFileName);
                     try (PrintWriter writer = new PrintWriter(classFile)) {
                         writer.print(result);
                     }
-                    log.info("{}", result);
+                    log.debug("{}", result);
                 }
             }
         }
