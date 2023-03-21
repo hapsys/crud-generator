@@ -8,6 +8,24 @@
             <column name="update_date"/>
             <column name="is_deleted"/>
         </validation>
+        <defaults>
+            <column name="create_user">
+                <create>"SYSTEM"</create>
+            </column>
+            <column name="create_date">
+                <create>new java.sql.Timestamp(System.currentTimeMillis())</create>
+            </column>
+            <column name="update_user">
+                <update>"SYSTEM"</update>
+            </column>
+            <column name="update_date">
+                <update>new java.sql.Timestamp(System.currentTimeMillis())</update>
+            </column>
+            <column name="is_deleted">
+                <create>false</create>
+            </column>
+
+        </defaults>
     </globals>
     <table name="country">
         <controller>
@@ -20,8 +38,8 @@
         </controller>
         <validation>
             <column name="port_id">
-    @NotNull
-    @Size(min = 3, max = 3)
+                @NotNull
+                @Size(min = 3, max = 3)
             </column>
         </validation>
         <sort>
@@ -30,8 +48,60 @@
             <column name="country_id"/>
         </sort>
         <filter>
+            <column name="name" suffix="ContainsIgnoreCase"/>
             <column name="town_id"/>
-            <column name="country_id"/>
+            <column name="country_id" multiple="true"/>
         </filter>
+    </table>
+    <!-- work dynamic dictionaries -->
+    <table name="partner">
+        <roles>
+            <controller type="list">
+                <role name="partner_get_full"/>
+            </controller>
+            <controller type="get">
+                <role name="partner_get_by_filter"/>
+            </controller>
+            <controller type="delete">
+                <role name="partner_get_full"/>
+            </controller>
+        </roles>
+    </table>
+    <table name="airline">
+        <roles>
+            <controller type="post">
+                <role name="airline_create"/>
+            </controller>
+            <controller type="put">
+                <role name="airline_update"/>
+            </controller>
+        </roles>
+    </table>
+    <table name="airline_interline">
+        <roles>
+            <controller type="post">
+                <role name="airline_interline_create"/>
+            </controller>
+            <controller type="put">
+                <role name="airline_interline_update"/>
+            </controller>
+        </roles>
+    </table>
+    <table name="agent">
+        <roles>
+            <controller type="post">
+                <role name="agent_create"/>
+            </controller>
+            <controller type="put">
+                <role name="agent_update"/>
+            </controller>
+        </roles>
+    </table>
+    <table name="shipper_consignee">
+        <roles>
+            <controller type="post">
+                <role name="shipper_consignee_create"/>
+            </controller>
+        </roles>
     </table>
 </meta-data>

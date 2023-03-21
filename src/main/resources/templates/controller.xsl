@@ -37,6 +37,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 import ru.aeroflot.dict.paginator.PaginatorData;
+<xsl:if test="$meta/roles/controller">import org.springframework.security.access.prepost.PreAuthorize;
+</xsl:if>
 import <xsl:value-of select="$repositoryPackage"/>.<xsl:value-of select="$repositoryClass"/>;
 import <xsl:value-of select="$dtoPackage"/>.<xsl:value-of select="$dtoClass"/>;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
@@ -73,6 +75,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 	<xsl:variable name="sort" select="$meta/sort/column"/><xsl:variable name="filter" select="$meta/filter/column"/>
 	@GetMapping(value="")
+	<xsl:if test="$meta/roles/controller[@type='list']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='list']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
 	@Operation(summary = "Получить список сущностей \"<xsl:value-of select="$tag"/>\"")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
@@ -81,12 +85,13 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 			@Valid @RequestParam(defaultValue = "1") @Parameter(description="Номер страницы") @Min(1) int page,
 			@Valid @RequestParam(defaultValue = "25") @Parameter(description="Элементов на странице") @Min(1) int size<xsl:if test="$sort">,
 	    	@RequestParam(defaultValue = "") @Parameter(description="Сортировка по полю") String sort</xsl:if><xsl:if test="$filter">,
-			@RequestParam(defaultValue = "") @Parameter(description="Поле фильтрации") String filter,
-			@RequestParam(defaultValue = "") @Parameter(description="Значение фильтрации") String value</xsl:if>) {
-		return new ResponseEntity&lt;&gt;(service.get<xsl:value-of select="@className"/>sPaging(page-1, size<xsl:if test="$sort">, sort</xsl:if><xsl:if test="$filter">, filter, value</xsl:if>), HttpStatus.OK);
+			@RequestParam(defaultValue = "") @Parameter(description="Фильтрация") Map&lt;String, String&gt; filter</xsl:if>) {
+		return new ResponseEntity&lt;&gt;(service.get<xsl:value-of select="@className"/>sPaging(page-1, size<xsl:if test="$sort">, sort</xsl:if><xsl:if test="$filter">, filter</xsl:if>), HttpStatus.OK);
 	}
 
 	@GetMapping(value="/meta/")
+	<xsl:if test="$meta/roles/controller[@type='meta']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='meta']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
 	@Operation(summary = "Получить метаданные сущности \"<xsl:value-of select="$tag"/>\"")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
@@ -97,6 +102,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@GetMapping(value="/{id}")
+	<xsl:if test="$meta/roles/controller[@type='get']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='get']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
 	@Operation(summary = "Получить запись сущности \"<xsl:value-of select="$tag"/>\" по ключу")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
@@ -110,6 +117,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@PostMapping(value="")
+	<xsl:if test="$meta/roles/controller[@type='post']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='post']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
 	@Operation(summary = "Создать запись сущности \"<xsl:value-of select="$tag"/>\"")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
@@ -120,6 +129,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@PutMapping(value="/{id}")
+	<xsl:if test="$meta/roles/controller[@type='put']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='put']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
 	@Operation(summary = "Обновить запись сущности \"<xsl:value-of select="$tag"/>\" по ключу")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
@@ -131,6 +142,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@DeleteMapping(value="/{id}")
+	<xsl:if test="$meta/roles/controller[@type='delete']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='delete']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
 	@Operation(summary = "Удалить запись сущности \"<xsl:value-of select="$tag"/>\" по ключу")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)

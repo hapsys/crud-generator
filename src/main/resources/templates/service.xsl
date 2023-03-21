@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+				xmlns:cnv="ru.cninnov.generator.utils.NodeUtils" xmlns:sxl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output encoding="utf-8" indent="yes" method="text" standalone="yes"/>
 	<xsl:param name="schema"/>
 	<xsl:param name="table"/>
@@ -36,10 +37,12 @@ import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClas
 import <xsl:value-of select="$mapperPackage"/>.<xsl:value-of select="$mapperClass"/>;
 import ru.aeroflot.dict.validation.exceptions.EmptyDataException;
 import ru.aeroflot.dict.validation.exceptions.RecordNotFoundException;
+import ru.aeroflot.dict.util.ConvertUtils;
 
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,11 +70,32 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 	<xsl:variable name="sort" select="$meta/sort/column"/><xsl:variable name="filter" select="$meta/filter/column"/>
 	public PaginatorData&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>sPaging(int page, int size<xsl:if
-		test="$sort">, String sorting</xsl:if><xsl:if test="$filter">, String filter, String value</xsl:if>) {
+		test="$sort">, String sorting</xsl:if><xsl:if test="$filter">, Map&lt;String, String&gt; params</xsl:if>) {
 		String sortField = null;
 		String sortOrder = null;
-		String filterField = null;
-		String filterValue = null;
+		Map&lt;String, Object&gt; active = null;
+
+		<xsl:if test="$filter">
+		String value = "";
+		active = new LinkedHashMap&lt;&gt;();
+		<xsl:for-each select="$filter">
+			<xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/>
+			value = params.get("<xsl:value-of select="$name"/>");
+			if (value != null &amp;&amp; !"".equals(value)) {
+				<xsl:choose>
+					<xsl:when test="@multiple = 'true'">
+						active.put("<xsl:value-of select="$name"/>", ConvertUtils.to<xsl:value-of select="$currentColumn/@shortType"/>(value));
+					</xsl:when>
+					<xsl:otherwise>
+						active.put("<xsl:value-of select="$name"/>",<xsl:choose>
+							<xsl:when test="$currentColumn/@shortType = 'String'">value</xsl:when>
+							<xsl:otherwise><xsl:value-of select="$currentColumn/@shortType"/>.valueOf(value)</xsl:otherwise>
+						</xsl:choose>);
+					</xsl:otherwise>
+				</xsl:choose>
+			}
+		</xsl:for-each>
+		</xsl:if>
 		<xsl:choose>
 		<xsl:when test="$sort">
 		Pageable pageable;
@@ -93,28 +117,23 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		Page&lt;<xsl:value-of select="$entityClass"/>&gt; pageTuts;
 		<xsl:choose>
 		<xsl:when test="$filter">
-		if (value != null &amp;&amp; !"".equals(value)) {
-			switch(filter) {
-				<xsl:for-each select="$filter"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/>
-				case "<xsl:value-of select="$name"/>":
-					pageTuts = repository.findAllBy<xsl:value-of select="$currentColumn/@className"/>(value, pageable);
-					filterField = "<xsl:value-of select="$name"/>";
-					filterValue = value;
-					break;
-				</xsl:for-each>
-				default:
-				pageTuts = repository.findAll(pageable);
-			}
+			<xsl:variable name="combinations" select="cnv:combi($filter)"/>
+			<xsl:for-each select="$combinations">
+	<xsl:if test="position() != 1">} else </xsl:if>if (<xsl:for-each select="column"><xsl:if test="position() != 1"> &amp;&amp; </xsl:if>active.containsKey("<xsl:value-of
+					select="@name"/>")</xsl:for-each>) {
+				pageTuts = repository.findAllBy<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">And</xsl:if><xsl:value-of select="$currentColumn/@className"/><xsl:if test="@multiple = 'true'">In</xsl:if><xsl:value-of
+					select="@suffix"/></xsl:for-each>(<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">, </xsl:if>(<xsl:value-of select="$currentColumn/@shortType"/><xsl:if test="@multiple = 'true'">[]</xsl:if>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>")</xsl:for-each>, pageable);
+			</xsl:for-each>
 		} else {
 			pageTuts = repository.findAll(pageable);
 		}</xsl:when>
 		<xsl:otherwise>
 		pageTuts = repository.findAll(pageable);</xsl:otherwise></xsl:choose>
-		if (pageTuts.isEmpty()) {
-			throw new EmptyDataException();
-		}
+<!-- 	if (pageTuts.isEmpty()) {
+                throw new EmptyDataException();
+            } -->
 		List&lt;<xsl:value-of select="$dtoClass"/>&gt; list = mapper.toDTOs(pageTuts.getContent());
-		PaginatorData&lt;<xsl:value-of select="$dtoClass"/>&gt; response = new PaginatorData&lt;&gt;(pageTuts.getNumber() + 1, pageTuts.getSize(), pageTuts.getTotalElements(), list, sortField, sortOrder, filterField, filterValue);
+		PaginatorData&lt;<xsl:value-of select="$dtoClass"/>&gt; response = new PaginatorData&lt;&gt;(pageTuts.getNumber() + 1, pageTuts.getSize(), pageTuts.getTotalElements(), list, sortField, sortOrder, active);
 		return response;
 	}
 
@@ -159,6 +178,10 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; <xsl:value-of select="@methodName"/> = repository.findById(<xsl:value-of select="$primary/@methodName"/>);
 		if (!<xsl:value-of select="@methodName"/>.isEmpty()) {
 			sourceDictDto.set<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@methodName"/>);
+			<xsl:for-each select="$currentTable/columns/entry/value"><xsl:variable name="currentColumn" select="."/><xsl:choose><xsl:when test="$metaInfo/globals/defaults/column[@name = $currentColumn/@name]/update">sourceDictDto.set<xsl:value-of select="$currentColumn/@className"/>(<xsl:value-of select="$metaInfo/globals/defaults/column[@name = $currentColumn/@name]/update/text()"/>);
+			</xsl:when><xsl:otherwise/></xsl:choose>
+			</xsl:for-each>
+
 			<xsl:value-of select="$entityClass"/> entity = <xsl:value-of select="@methodName"/>.get();
 			entity = mapper.toEntity(entity, sourceDictDto);
 			return mapper.toDTO(repository.save(entity));
@@ -178,6 +201,14 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 				select="@name"/>", "<xsl:value-of select="foreignKey/@schema"/>.<xsl:value-of select="foreignKey/@table"/>.<xsl:value-of select="foreignKey/column/@name"/>"}, new Object[]{sourceDictDto.get<xsl:value-of select="@className"/>()}));
 		</xsl:for-each>
 		<xsl:if test="$primary/@isAutoincrement = 'true'">sourceDictDto.set<xsl:value-of select="$primary/@className"/>(null);</xsl:if>
+		<xsl:for-each select="$currentTable/columns/entry/value">
+			<xsl:variable name="currentColumn" select="."/>
+			<xsl:choose>
+				<xsl:when test="$metaInfo/globals/defaults/column[@name = $currentColumn/@name]/create">
+		sourceDictDto.set<xsl:value-of select="$currentColumn/@className"/>(<xsl:value-of select="$metaInfo/globals/defaults/column[@name = $currentColumn/@name]/create/text()"/>);</xsl:when>
+				<xsl:otherwise/>
+			</xsl:choose>
+		</xsl:for-each>
 		return mapper.toDTO(repository.save(mapper.toNewEntity(sourceDictDto)));
 	}
 
@@ -246,4 +277,34 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	<xsl:template name="pk_type">
 		<xsl:value-of select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/>
 	</xsl:template>
+	<!--
+    //
+    //
+    //
+    -->
+	<xsl:template name="make_filter">
+		<xsl:param name="filter"/>
+		<xsl:param name="pos"/>
+		<xsl:param name="content"/>
+		<xsl:param name="parameters"/>
+		<xsl:param name="currentTable"/>
+		<xsl:variable name="name" select="$filter[$pos]/@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/>
+		<xsl:variable name="pars"><xsl:value-of select="$parameters"/><xsl:if test="string-length($parameters) != 0">, </xsl:if><xsl:value-of select="$currentColumn/@shortType"/><xsl:if test="$filter[$pos]/@multiple = 'true'">[]</xsl:if><xsl:text> </xsl:text><xsl:value-of
+				select="$currentColumn/@methodName"/></xsl:variable>
+		<xsl:variable name="ctx"><xsl:value-of select="$content"/><xsl:if test="string-length($content) != 0">And</xsl:if><xsl:value-of select="$currentColumn/@className"/><xsl:if test="$filter[$pos]/@multiple = 'true'">In</xsl:if><xsl:value-of
+				select="$filter[$pos]/@suffix"/></xsl:variable>
+		if ()
+		Page&lt;<xsl:value-of select="$entityClass"/>&gt; findAllBy<xsl:value-of select="$ctx"/>(<xsl:value-of
+			select="$pars"/>, Pageable pageable);
+		<xsl:if test="$pos &lt; count($filter)">
+			<xsl:call-template name="make_filter">
+				<xsl:with-param name="filter" select="$filter"/>
+				<xsl:with-param name="pos" select="$pos + 1"/>
+				<xsl:with-param name="content" select="$ctx"/>
+				<xsl:with-param name="parameters" select="$pars"/>
+				<xsl:with-param name="currentTable" select="$currentTable"/>
+			</xsl:call-template>
+		</xsl:if>
+	</xsl:template>
+
 </xsl:stylesheet>

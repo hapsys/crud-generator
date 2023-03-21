@@ -18,7 +18,7 @@ spring:
 
 generator:
   root: /Projects/java/centurion/afl_default/ms-dict-development/server/src/main/java
-#  export: /structure.xml
+  export: /structure.xml
   schemas: msdict, msdictdynamic
   tables:
     include: # country , town, airport, currency, country_currency #country_zone_airport

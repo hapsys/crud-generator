@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:cnv="ru.cninnov.generator.utils.NodeUtils">
 	<xsl:output encoding="utf-8" indent="yes" method="text" standalone="yes"/>
 	<xsl:param name="schema"/>
 	<xsl:param name="table"/>
@@ -34,9 +34,13 @@ public interface <xsl:value-of select="@className"/><xsl:value-of select="$suffi
 		</xsl:choose>
 </xsl:for-each>
 	<xsl:if test="$meta/filter/column">
-		<xsl:for-each select="$meta/filter/column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/>
-	Page&lt;<xsl:value-of select="$entityClass"/>&gt; findAllBy<xsl:value-of select="$currentColumn/@className"/>(<xsl:value-of select="$currentColumn/@shortType"/><xsl:text> </xsl:text><xsl:value-of
-					select="$currentColumn/@methodName"/>, Pageable pageable);</xsl:for-each>
+		<xsl:variable name="filters" select="$meta/filter/column"/>
+		<xsl:variable name="combinations" select="cnv:combi($filters)"/>
+		<xsl:for-each select="$combinations">
+			Page&lt;<xsl:value-of select="$entityClass"/>&gt; findAllBy<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">And</xsl:if><xsl:value-of select="$currentColumn/@className"/><xsl:if test="@multiple = 'true'">In</xsl:if><xsl:value-of
+				select="@suffix"/></xsl:for-each>(<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">, </xsl:if><xsl:value-of select="$currentColumn/@shortType"/><xsl:if test="@multiple = 'true'">[]</xsl:if><xsl:text> </xsl:text><xsl:value-of
+				select="$currentColumn/@methodName"/></xsl:for-each>, Pageable pageable);
+		</xsl:for-each>
 	</xsl:if>
 	//@Async
 	//default &lt;S extends <xsl:value-of select="$entityClass"/>&gt; S saveAsync(S entity) { return save(entity); }
