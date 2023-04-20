@@ -77,6 +77,9 @@ public class Table {
                     String name = resultSetMetaData.getColumnName(i);
                     String className = resultSetMetaData.getColumnClassName(i);
                     //log.info("Class name: {}", className);
+                    if ("bytea".equals(columns.get(name).getBaseType())) {
+                        className = "java.lang.String";
+                    }
                     columns.get(name).setType(Class.forName(className));
                     String shortName = className;
                     String prefix = "java.lang.";

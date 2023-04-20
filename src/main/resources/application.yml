@@ -3,7 +3,8 @@ spring:
     web-application-type: none
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:ms-dict1}?reWriteBatchedInserts=true
+    #url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-cargo}?reWriteBatchedInserts=true
+    url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-dict}?reWriteBatchedInserts=true
     username: ${POSTGRES-USER:postgres}
     password: ${POSTGRES-PASSWORD:postgres}
     auto-commit: false
@@ -17,9 +18,15 @@ spring:
       validation-timeout: 360000
 
 generator:
-  root: /Projects/java/centurion/afl_default/ms-dict-development/server/src/main/java
+  #root: /Projects/java/centurion/afl_default/ms-dict-development/server/src/main/java
+  #root: /Projects/java/centurion/afl_cargo/ms-dict/server/src/main/java
+  root: /Projects/java/centurion/afl_cargo/cargo-dict-development/server/src/main/java
   export: /structure.xml
-  schemas: msdict, msdictdynamic
+  #schemas: msdict
+  schemas: mscargo
+  #schema-packages:
+  # msdict: msdict
+  # msdictdynamic: cargo
   tables:
     include: # country , town, airport, currency, country_currency #country_zone_airport
     exclude: acl_class, acl_entry, acl_object_identity, acl_sid, work_activity_dict, work_activity_group_dict, work_activity_type_dict, work_activity_type_setting

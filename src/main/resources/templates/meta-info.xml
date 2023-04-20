@@ -49,6 +49,7 @@
         </sort>
         <filter>
             <column name="name" suffix="ContainsIgnoreCase"/>
+            <column name="port_id"/>
             <column name="town_id"/>
             <column name="country_id" multiple="true"/>
         </filter>
@@ -106,4 +107,53 @@
         </roles>
     </table>
     -->
+    <table name="agent_contract_constraint_flight">
+        <filter>
+            <column name="contract_id" multiple="true"/>
+        </filter>
+    </table>
+    <table name="agent_contract_constraint_flight_day_of_week">
+        <filter>
+            <column name="contract_id" multiple="true"/>
+        </filter>
+    </table>
+    <table name="agent_contract_constraint_shc">
+        <filter>
+            <column name="contract_id" multiple="true"/>
+        </filter>
+    </table>
+    <table name="agent_contract_constraint_route">
+        <filter>
+            <column name="contract_id" multiple="true"/>
+        </filter>
+    </table>
+    <table name="agent_contract_constraint_sales_region">
+        <filter>
+            <column name="contract_id" multiple="true"/>
+        </filter>
+    </table>
+    <table name="agent_contract_constraint_cargo_product">
+        <filter>
+            <column name="contract_id" multiple="true"/>
+        </filter>
+    </table>
+    <table name="agent_contract">
+        <filter>
+            <column name="agent_id" multiple="true"/>
+        </filter>
+    </table>
+    <!-- Таблица расписаний -->
+    <table name="flight">
+        <sort>
+            <column name="date_time_departure" default="true"/>
+        </sort>
+        <filter>
+            <column name="date_time_departure" between="true"/>
+            <column name="airport_departure_code"/>
+            <column name="airport_arrival_code"/>
+            <column name="airline_code"/>
+            <column name="flight_number"/>
+        </filter>
+    </table>
+
 </meta-data>

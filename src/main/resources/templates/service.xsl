@@ -77,9 +77,21 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 
 		<xsl:if test="$filter">
 		String value = "";
+		String value1 = "";
 		active = new LinkedHashMap&lt;&gt;();
 		<xsl:for-each select="$filter">
 			<xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/>
+			<xsl:choose><xsl:when test="@between = 'true'">
+			value = params.get("<xsl:value-of select="$name"/>_start");
+			value1 = params.get("<xsl:value-of select="$name"/>_end");
+			if (value != null &amp;&amp; !"".equals(value) &amp;&amp; value1 != null &amp;&amp; !"".equals(value1)) {
+				active.put("<xsl:value-of select="$name"/>_start",<xsl:choose>
+				<xsl:when test="$currentColumn/@shortType = 'String'">value</xsl:when>
+				<xsl:otherwise><xsl:value-of select="$currentColumn/@shortType"/>.valueOf(value)</xsl:otherwise></xsl:choose>);
+				active.put("<xsl:value-of select="$name"/>_end",<xsl:choose>
+				<xsl:when test="$currentColumn/@shortType = 'String'">value</xsl:when>
+				<xsl:otherwise><xsl:value-of select="$currentColumn/@shortType"/>.valueOf(value1)</xsl:otherwise></xsl:choose>);
+			}</xsl:when><xsl:otherwise>
 			value = params.get("<xsl:value-of select="$name"/>");
 			if (value != null &amp;&amp; !"".equals(value)) {
 				<xsl:choose>
@@ -93,7 +105,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 						</xsl:choose>);
 					</xsl:otherwise>
 				</xsl:choose>
-			}
+			}</xsl:otherwise></xsl:choose>
 		</xsl:for-each>
 		</xsl:if>
 		<xsl:choose>
@@ -121,8 +133,10 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 			<xsl:for-each select="$combinations">
 	<xsl:if test="position() != 1">} else </xsl:if>if (<xsl:for-each select="column"><xsl:if test="position() != 1"> &amp;&amp; </xsl:if>active.containsKey("<xsl:value-of
 					select="@name"/>")</xsl:for-each>) {
-				pageTuts = repository.findAllBy<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">And</xsl:if><xsl:value-of select="$currentColumn/@className"/><xsl:if test="@multiple = 'true'">In</xsl:if><xsl:value-of
-					select="@suffix"/></xsl:for-each>(<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">, </xsl:if>(<xsl:value-of select="$currentColumn/@shortType"/><xsl:if test="@multiple = 'true'">[]</xsl:if>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>")</xsl:for-each>, pageable);
+				pageTuts = repository.findAllBy<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">And</xsl:if><xsl:value-of select="$currentColumn/@className"/><xsl:if test="@multiple = 'true'">In</xsl:if><xsl:if test="@between = 'true'">Between</xsl:if><xsl:value-of
+					select="@suffix"/></xsl:for-each>(<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">, </xsl:if><xsl:choose>
+				<xsl:when test="@between = 'true'">(<xsl:value-of select="$currentColumn/@shortType"/>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>_start"), (<xsl:value-of select="$currentColumn/@shortType"/>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>_end")</xsl:when><xsl:otherwise>(<xsl:value-of select="$currentColumn/@shortType"/><xsl:if test="@multiple = 'true'">[]</xsl:if>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>")</xsl:otherwise>
+			</xsl:choose></xsl:for-each>, pageable);
 			</xsl:for-each>
 		} else {
 			pageTuts = repository.findAll(pageable);

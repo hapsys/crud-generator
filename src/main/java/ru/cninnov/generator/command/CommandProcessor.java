@@ -231,10 +231,6 @@ public class CommandProcessor implements CommandLineRunner {
 
     private void processParts(AbstractGeneratorConfigProperties part, Document document) throws Exception {
         Map<String, Object> props = new HashMap<>() {{put("root", properties.getRoot());}};
-        File pkgDir;
-        pkgDir = new File(root, part.getPackages().replace('.','/'));
-        pkgDir.mkdirs();
-        props.put("package", part.getPackages());
         props.put("step", "process");
         props.put("suffix", part.getSuffix());
         props.put("suffix-data", Objects.nonNull(part.getSuffixData())?part.getSuffixData():"");
@@ -250,23 +246,36 @@ public class CommandProcessor implements CommandLineRunner {
         String serviceSuffix = properties.getService().getSuffix();
         String metaPackageName = properties.getMeta().getPackages();
         String metaSuffix = properties.getMeta().getSuffix();
-        props.put("entityPackage", entityPackageName);
         props.put("entitySuffix", entitySuffix);
-        props.put("dtoPackage", dtoPackageName);
         props.put("dtoSuffix", dtoSuffix);
-        props.put("repositoryPackage", repositoryPackageName);
         props.put("repositorySuffix", repositorySuffix);
-        props.put("mapperPackage", mapperPackageName);
         props.put("mapperSuffix", mapperSuffix);
-        props.put("servicePackage", servicePackageName);
         props.put("serviceSuffix", serviceSuffix);
-        props.put("metaPackage", metaPackageName);
         props.put("metaSuffix", metaSuffix);
         // Load xslt template file
         Transformer transformer = getTransformer(part.getTemplate());
 
         for (String schemaName: structure.getSchemas().keySet()) {
             props.put("schema", schemaName);
+            String packageSuffix = "";
+            if (properties.getSchemaPackages() != null) {
+                if (properties.getSchemaPackages() != null && properties.getSchemaPackages().containsKey(schemaName)) {
+                    packageSuffix = "." + properties.getSchemaPackages().get(schemaName);
+                } else {
+                    packageSuffix = "." + schemaName;
+                }
+            }
+            String pkg = part.getPackages() + packageSuffix;
+            File pkgDir;
+            pkgDir = new File(root, pkg.replace('.','/'));
+            pkgDir.mkdirs();
+            props.put("package", pkg);
+            props.put("entityPackage", entityPackageName + packageSuffix);
+            props.put("dtoPackage", dtoPackageName + packageSuffix);
+            props.put("repositoryPackage", repositoryPackageName + packageSuffix);
+            props.put("mapperPackage", mapperPackageName + packageSuffix);
+            props.put("servicePackage", servicePackageName + packageSuffix);
+            props.put("metaPackage", metaPackageName + packageSuffix);
             for (String tableName: structure.getSchemas().get(schemaName).getTables().keySet()) {
                 String className = structure.getSchemas().get(schemaName).getTable(tableName).getClassName();
                 String entityClassName = className + properties.getEntities().getSuffix();

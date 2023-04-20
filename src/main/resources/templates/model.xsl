@@ -20,8 +20,6 @@ import lombok.Data;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
-import ru.aeroflot.dict.api.model.DictionaryInfo;
-import java.time.ZonedDateTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import javax.validation.constraints.*;
 
@@ -30,7 +28,7 @@ import javax.validation.constraints.*;
 <xsl:variable name="meta" select="$metaInfo/table[@name=$table]"/>
 @Schema(description = "<xsl:value-of select="@comment" disable-output-escaping="yes"/>")
 @Data
-public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> implements DictionaryInfo, Serializable  {
+public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> implements Serializable  {
 	<xsl:for-each select="columns/entry"><xsl:variable name="columnName" select="value/@name"/>
 	<xsl:if test="string-length(value/@comment) != 0"><!-- /** <xsl:value-of select="value/@comment" disable-output-escaping="yes"/> */ -->
 	@Schema(description = "<xsl:value-of select="value/@comment" disable-output-escaping="yes"/>")

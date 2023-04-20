@@ -4,11 +4,14 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import ru.cninnov.generator.config.AbstractGeneratorConfigProperties;
 
+import java.util.Map;
+
 @ConfigurationProperties(prefix = "generator")
 @Data
 public class GeneratorConfigProperties {
 
     private String[] schemas;
+    private Map<String, String> schemaPackages;
     private String export;
     private String root;
     private Tables tables;
