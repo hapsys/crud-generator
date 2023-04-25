@@ -197,6 +197,9 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 			</xsl:for-each>
 
 			<xsl:value-of select="$entityClass"/> entity = <xsl:value-of select="@methodName"/>.get();
+			<xsl:if test="string-length($meta/update) != 0">
+				<xsl:value-of select="$meta/update" disable-output-escaping="yes"/>
+			</xsl:if>
 			entity = mapper.toEntity(entity, sourceDictDto);
 			return mapper.toDTO(repository.save(entity));
 		} else {
@@ -223,6 +226,9 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 				<xsl:otherwise/>
 			</xsl:choose>
 		</xsl:for-each>
+		<xsl:if test="string-length($meta/create) != 0">
+			<xsl:value-of select="$meta/create" disable-output-escaping="yes"/>
+		</xsl:if>
 		return mapper.toDTO(repository.save(mapper.toNewEntity(sourceDictDto)));
 	}
 

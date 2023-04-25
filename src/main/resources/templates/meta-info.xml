@@ -154,6 +154,15 @@
             <column name="airline_code"/>
             <column name="flight_number"/>
         </filter>
+        <validation>
+            <column name="hash_code"></column>
+        </validation>
+        <create>
+            sourceDictDto.setHashCode(sourceDictDto.getDateTimeDeparture().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getAirlineCode() + sourceDictDto.getFlightNumber());
+        </create>
+        <update>
+            sourceDictDto.setHashCode(sourceDictDto.getDateTimeDeparture().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getAirlineCode() + sourceDictDto.getFlightNumber());
+        </update>
     </table>
 
 </meta-data>
