@@ -145,23 +145,24 @@
     <!-- Таблица расписаний -->
     <table name="flight">
         <sort>
-            <column name="date_time_departure" default="true"/>
+            <column name="departure_date" default="true"/>
         </sort>
         <filter>
-            <column name="date_time_departure" between="true"/>
-            <column name="airport_departure_code"/>
-            <column name="airport_arrival_code"/>
-            <column name="airline_code"/>
-            <column name="flight_number"/>
+            <column name="departure_date" between="true"/>
+            <column name="departure_airport"/>
+            <column name="arrival_airport"/>
+            <column name="carrier"/>
+            <column name="flight_number" multiple="true"/>
+            <column name="aircraft_type"/>
         </filter>
         <validation>
             <column name="hash_code"></column>
         </validation>
         <create>
-            sourceDictDto.setHashCode(sourceDictDto.getDateTimeDeparture().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getAirlineCode() + sourceDictDto.getFlightNumber());
+            sourceDictDto.setHashCode(sourceDictDto.getDepartureDate().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getCarrier() + sourceDictDto.getFlightNumber());
         </create>
         <update>
-            sourceDictDto.setHashCode(sourceDictDto.getDateTimeDeparture().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getAirlineCode() + sourceDictDto.getFlightNumber());
+            sourceDictDto.setHashCode(sourceDictDto.getDepartureDate().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getCarrier() + sourceDictDto.getFlightNumber());
         </update>
     </table>
 

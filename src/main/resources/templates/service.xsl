@@ -132,7 +132,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 			<xsl:variable name="combinations" select="cnv:combi($filter)"/>
 			<xsl:for-each select="$combinations">
 	<xsl:if test="position() != 1">} else </xsl:if>if (<xsl:for-each select="column"><xsl:if test="position() != 1"> &amp;&amp; </xsl:if>active.containsKey("<xsl:value-of
-					select="@name"/>")</xsl:for-each>) {
+					select="@name"/><xsl:if test="@between = 'true'">_start</xsl:if>")</xsl:for-each>) {
 				pageTuts = repository.findAllBy<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">And</xsl:if><xsl:value-of select="$currentColumn/@className"/><xsl:if test="@multiple = 'true'">In</xsl:if><xsl:if test="@between = 'true'">Between</xsl:if><xsl:value-of
 					select="@suffix"/></xsl:for-each>(<xsl:for-each select="column"><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:if test="position() != 1">, </xsl:if><xsl:choose>
 				<xsl:when test="@between = 'true'">(<xsl:value-of select="$currentColumn/@shortType"/>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>_start"), (<xsl:value-of select="$currentColumn/@shortType"/>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>_end")</xsl:when><xsl:otherwise>(<xsl:value-of select="$currentColumn/@shortType"/><xsl:if test="@multiple = 'true'">[]</xsl:if>)<xsl:text> </xsl:text>active.get("<xsl:value-of select="$name"/>")</xsl:otherwise>
