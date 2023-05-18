@@ -19,11 +19,11 @@ spring:
 
 generator:
   #root: /Projects/java/centurion/afl_default/ms-dict-development/server/src/main/java
-  #root: /Projects/java/centurion/afl_cargo/ms-dict/server/src/main/java
-  root: /Projects/java/centurion/afl_cargo/cargo-dict-development/server/src/main/java
+  root: /Projects/java/centurion/afl_cargo/ms-dict/server/src/main/java
+  # root: /Projects/java/centurion/afl_cargo/cargo-dict-development/server/src/main/java
   export: /structure.xml
-  #schemas: msdict
-  schemas: mscargo
+  schemas: msdict
+  # schemas: mscargo
   #schema-packages:
   # msdict: msdict
   # msdictdynamic: cargo

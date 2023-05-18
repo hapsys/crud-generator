@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import org.hibernate.annotations.DynamicInsert;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
 <xsl:variable name="canJson" select="count(columns/entry/value[@baseType='jsonb']) != 0"/>
@@ -27,6 +28,7 @@ import org.hibernate.annotations.TypeDef;</xsl:if>
 /** <xsl:value-of select="@comment" disable-output-escaping="yes"/> */</xsl:if>
 <xsl:if test="$canJson">
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)</xsl:if>
+@DynamicInsert
 @Entity
 @Data
 @Table(name = "<xsl:value-of select="$table"/>", schema = "<xsl:value-of select="$schema"/>")
