@@ -1,11 +1,11 @@
 @echo off
 
-SET URL-DB=192.168.1.51
-SET PORT-DB=5432
-SET DB-NAME=postgres-cargo
+#SET URL-DB=192.168.1.51
+#SET PORT-DB=5432
+#SET DB-NAME=postgres-cargo
 #SET DB-NAME=postgres-dict
-SET POSTGRES-USER=postgres
-SET POSTGRES-PASSWORD=password
+#SET POSTGRES-USER=postgres
+#SET POSTGRES-PASSWORD=password
 
 
 

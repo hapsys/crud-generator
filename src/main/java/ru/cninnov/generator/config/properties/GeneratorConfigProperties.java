@@ -15,6 +15,10 @@ public class GeneratorConfigProperties {
     private String export;
     private String root;
     private Tables tables;
+
+    private Map<String, AbstractGeneratorConfigProperties> steps;
+
+    /*
     private Entities entities;
     private Repository repository;
     private Model model;
@@ -23,12 +27,15 @@ public class GeneratorConfigProperties {
     private Controller controller;
     private Meta meta;
 
+     */
+
     @Data
     public static class Tables {
         private String[] include;
         private String[] exclude;
     }
 
+    /*
     @Data
     public static class Entities extends AbstractGeneratorConfigProperties {
     }
@@ -56,4 +63,6 @@ public class GeneratorConfigProperties {
     @Data
     public static class Meta extends AbstractGeneratorConfigProperties {
     }
+
+     */
 }

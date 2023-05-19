@@ -112,63 +112,10 @@ public class CommandProcessor implements CommandLineRunner {
         // --------------------------------------------------------------------------------------------------
 
 
-        File pkgDir;
-        /**
-         * Generate Entities
-         */
-        if (properties.getEntities().isEnable()) {
-            processParts(properties.getEntities(), document);
-        }
+        //File pkgDir;
 
-        // --------------------------------------------------------------------------------------------------
-
-        /**
-         * Generate Repository
-         */
-        if (properties.getRepository().isEnable()) {
-            processParts(properties.getRepository(), document);
-        }
-
-        // ---------------------------------------------------------------------------------------
-        /**
-         * Generate Models
-         */
-        if (properties.getModel().isEnable()) {
-            processParts(properties.getModel(), document);
-        }
-
-
-        // ---------------------------------------------------------------------------------------
-        /**
-         * Generate Mappers
-         */
-        if (properties.getMapper().isEnable()) {
-            processParts(properties.getMapper(), document);
-        }
-
-        // ---------------------------------------------------------------------------------------
-        /**
-         * Generate Service
-         */
-        if (properties.getService().isEnable()) {
-            processParts(properties.getService(), document);
-        }
-
-        // ---------------------------------------------------------------------------------------
-        /**
-         * Generate Metadata
-         */
-        if (properties.getMeta().isEnable()) {
-            processParts(properties.getMeta(), document);
-        }
-
-        // ---------------------------------------------------------------------------------------
-        /**
-         * Generate Controller
-         */
-        if (properties.getController().isEnable()) {
-            processParts(properties.getController(), document);
-        }
+        log.info("Configuration size {}",properties.getSteps().size());
+        properties.getSteps().forEach((x,y)-> log.info(x));
     }
 
     private void parseCommandLine(String[] cmdLine) {
@@ -180,6 +127,7 @@ public class CommandProcessor implements CommandLineRunner {
                     properties.setRoot(cmdLine[i]);
                 }
             } else {
+                /*
                 switch (cmd) {
                     case "--enableEntities":
                         properties.getEntities().setEnable(true);
@@ -225,11 +173,14 @@ public class CommandProcessor implements CommandLineRunner {
                         break;
                     default:
                 }
+
+                 */
             }
         }
     }
 
     private void processParts(AbstractGeneratorConfigProperties part, Document document) throws Exception {
+        /*
         Map<String, Object> props = new HashMap<>() {{put("root", properties.getRoot());}};
         props.put("step", "process");
         props.put("suffix", part.getSuffix());
@@ -337,6 +288,7 @@ public class CommandProcessor implements CommandLineRunner {
                 }
             }
         }
+       */
 
     }
 

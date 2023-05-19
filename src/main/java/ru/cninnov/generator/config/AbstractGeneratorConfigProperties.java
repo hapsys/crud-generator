@@ -6,12 +6,14 @@ import lombok.Data;
 public class AbstractGeneratorConfigProperties {
 
     private boolean enable;
+    private String  root;
+    private boolean single;
     private String  packages;
     private String  template;
     private String  suffix;
-    private boolean usePrimary;
-    private boolean generateData;
-    private String  suffixData;
+    //private boolean usePrimary;
+    //private boolean generateData;
+    //private String  suffixData;
     private String  savePartStart;
 
 }
