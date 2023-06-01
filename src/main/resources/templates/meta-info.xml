@@ -142,6 +142,11 @@
             <column name="agent_id" multiple="true"/>
         </filter>
     </table>
+    <table name="agent_contract_currency">
+        <filter>
+            <column name="contract_id"/>
+        </filter>
+    </table>
     <!-- Таблица расписаний -->
     <table name="flight">
         <sort>
