@@ -1,0 +1,69 @@
+spring:
+  main:
+    web-application-type: none
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    #url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-cargo}?reWriteBatchedInserts=true
+    url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-dict}?reWriteBatchedInserts=true
+    username: ${POSTGRES-USER:postgres}
+    password: ${POSTGRES-PASSWORD:postgres}
+    auto-commit: false
+    maximumPoolSize: 10
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+      maximum-pool-size: 10
+      max-lifetime: 360000
+      connection-timeout: 360000
+      validation-timeout: 360000
+
+generator:
+  root: /Projects/java/centurion/afl_cargo/ms-dict/server/src/main/java
+  export: /structure.xml
+  schemas: msdict
+  #schema-packages:
+  # msdict: msdict
+  # msdictdynamic: cargo
+  tables:
+    include: # country , town, airport, currency, country_currency #country_zone_airport
+    exclude: acl_class, acl_entry, acl_object_identity, acl_sid, work_activity_dict, work_activity_group_dict, work_activity_type_dict, work_activity_type_setting
+  entities:
+    enable: true
+    packages: ru.aeroflot.dict.v1.entity
+    template: src/main/resources/templates/entity.xsl
+    suffix: V1Entity
+  repository:
+    enable: true
+    packages: ru.aeroflot.dict.v1.repository
+    template: src/main/resources/templates/repository.xsl
+    suffix: V1Repository
+    save-part-start: \/\*\* User changes
+  model:
+    enable: true
+    generate-data: false
+    packages: ru.aeroflot.dict.v1.model
+    template: src/main/resources/templates/model.xsl
+    suffix: V1Dto
+    suffix-data: V1Data
+  mapper:
+    enable: true
+    packages: ru.aeroflot.dict.v1.mapper
+    template: src/main/resources/templates/mapper.xsl
+    suffix: V1Mapper
+  service:
+    enable: true
+    packages: ru.aeroflot.dict.v1.service
+    template: src/main/resources/templates/service.xsl
+    suffix: V1Service
+  meta:
+    enable: true
+    packages: ru.aeroflot.dict.v1.meta
+    template: src/main/resources/templates/meta.xsl
+    suffix: V1Meta
+  controller:
+    enable: true
+    packages: ru.aeroflot.dict.v1.controller
+    template: src/main/resources/templates/controller.xsl
+    suffix: V1Controller
+
+

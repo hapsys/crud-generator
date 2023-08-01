@@ -161,25 +161,6 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		return mapper.toDTO(optional.get());
 	}
 
-	<xsl:variable name="uniq_index" select="indexes/entry[(value/@isUniq = 'true' and count(value/columns[@isPrimaryKey = 'false']) != 0)]"/>
-	@Transactional
-	public void update<xsl:value-of select="@className"/>(@Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
-
-		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; <xsl:value-of select="@methodName"/> = repository.<xsl:choose>
-			<xsl:when test="count($uniq_index) = 0">findById(sourceDictDto.get<xsl:value-of select="indexes/entry/value/columns[@isPrimaryKey = 'true']/@className"/>());</xsl:when>
-			<xsl:otherwise>findOneBy<xsl:value-of select="$uniq_index/value/columns/@className"/>(sourceDictDto.get<xsl:value-of select="$uniq_index/value/columns/@className"/>());</xsl:otherwise>
-</xsl:choose>
-		if (<xsl:value-of select="@methodName"/>.isEmpty()) {
-			//log.info("Airport is not found, created new Airport by id: {}", sourceDictDto.get<xsl:value-of select="$uniq_index/value/columns/@className"/>());
-			<xsl:value-of select="$entityClass"/> entity = mapper.toNewEntity(sourceDictDto);
-			repository.save(entity);
-			return;
-		}
-		<xsl:value-of select="$entityClass"/> entity =  <xsl:value-of select="@methodName"/>.get();
-		entity = mapper.toEntity(entity, sourceDictDto);
-		//log.info("Updating existing Airport Dictionary: {}", sourceDictDto.get<xsl:value-of select="$uniq_index/value/columns/@className"/>());
-		repository.save(entity);
-	}
 	@Transactional
 	public <xsl:value-of select="$dtoClass"/> update<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>, @Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
 	<xsl:for-each select="indexes/entry/value[@isUniq = 'true']">

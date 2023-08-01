@@ -54,6 +54,13 @@
             <column name="country_id" multiple="true"/>
         </filter>
     </table>
+    <table name="town">
+        <filter>
+            <column name="name" suffix="IgnoreCase"/>
+            <column name="name_eng" suffix="IgnoreCase"/>
+            <column name="town_id"/>
+        </filter>
+    </table>
     <!-- work dynamic dictionaries -->
     <!-- temp remove
     <table name="partner">
@@ -159,6 +166,7 @@
             <column name="carrier"/>
             <column name="flight_number" multiple="true"/>
             <column name="aircraft_type"/>
+            <column name="weekday" multiple="true"/>
         </filter>
         <validation>
             <column name="hash_code"></column>
