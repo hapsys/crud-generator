@@ -178,5 +178,23 @@
             sourceDictDto.setHashCode(sourceDictDto.getDepartureDate().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getCarrier() + sourceDictDto.getFlightNumber());
         </update>
     </table>
-
+    <!--
+    TELEGRAMS
+    -->
+    <table name="cargo_message">
+        <sort>
+            <column name="create_date" default="true"/>
+        </sort>
+        <filter>
+            <column name="create_date" between="true"/>
+            <column name="direction"/>
+            <column name="channel"/>
+            <column name="format"/>
+            <column name="airline_id"/>
+            <column name="flight_number"/>
+            <column name="sender" suffix="ContainsIgnoreCase"/>
+            <column name="awb_number"/>
+            <column name="aircaft_type"/>
+        </filter>
+    </table>
 </meta-data>
