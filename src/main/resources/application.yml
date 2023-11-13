@@ -3,7 +3,6 @@ spring:
     web-application-type: none
   datasource:
     driver-class-name: org.postgresql.Driver
-    #url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-cargo}?reWriteBatchedInserts=true
     url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-dict}?reWriteBatchedInserts=true
     username: ${POSTGRES-USER:postgres}
     password: ${POSTGRES-PASSWORD:postgres}
