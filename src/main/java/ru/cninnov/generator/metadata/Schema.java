@@ -1,13 +1,12 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.aeroflot.generator.config.properties.GeneratorConfigProperties;
+import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.*;
@@ -41,13 +40,12 @@ public class Schema {
     public void generateTables() throws Exception {
 
         props = GeneratorContext.instance.getProperties().getTables();
-        dataSource = GeneratorContext.instance.getDataSource();
 
         List<String> include = props.getInclude() != null? Arrays.asList(props.getInclude()): new ArrayList<>();
         List<String> exclude = props.getExclude() != null? Arrays.asList(props.getExclude()): new ArrayList<>();
 
-        Connection connection = dataSource.getConnection();
-        DatabaseMetaData metaData = connection.getMetaData();
+        //Connection connection = GeneratorContext.instance.getConnection();
+        DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
 
         try (ResultSet tables = metaData.getTables(null, this.getName(), null, new String[]{"TABLE"})) {
             while(tables.next()) {
@@ -69,5 +67,11 @@ public class Schema {
             table.generateColumns();
         }
 
+    }
+
+    public void generateForeignKeys(DataBaseStructure structure) throws Exception {
+        for (Table table: tables.values()) {
+            table.generateForeignKeys(structure);
+        }
     }
 }

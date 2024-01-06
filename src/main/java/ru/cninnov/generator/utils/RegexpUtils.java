@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.utils;
+package ru.cninnov.generator.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
