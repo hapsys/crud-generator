@@ -1,13 +1,12 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import ru.aeroflot.generator.utils.Utils;
+import ru.cninnov.generator.utils.Utils;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,18 +49,21 @@ public class Table {
 
     public void generateColumns() throws Exception {
 
-        DataSource dataSource = GeneratorContext.instance.getDataSource();
-        Connection connection = dataSource.getConnection();
-        DatabaseMetaData metaData = connection.getMetaData();
+        Connection connection = GeneratorContext.instance.getConnection();
+        DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
+
 
         try (ResultSet resultSet = metaData.getColumns(null, this.schema.getName(), getName(), null)) {
             while(resultSet.next()) {
                 String name = resultSet.getString("COLUMN_NAME");
                 String comment = resultSet.getString("REMARKS");
+                String baseType = resultSet.getString("TYPE_NAME");
+                int size = resultSet.getInt("COLUMN_SIZE");
+                String columnDef = resultSet.getString("COLUMN_DEF");
                 boolean isNullable = !"NO".equals(resultSet.getString("IS_NULLABLE"));
                 boolean isAutoincrement = "YES".equals(resultSet.getString("IS_AUTOINCREMENT"));
 
-                Column column = new Column(this, name, comment, isNullable, isAutoincrement);
+                Column column = new Column(this, name, comment, baseType, size, isNullable, isAutoincrement, columnDef);
                 columns.put(name, column);
             }
         }
@@ -75,6 +77,9 @@ public class Table {
                     String name = resultSetMetaData.getColumnName(i);
                     String className = resultSetMetaData.getColumnClassName(i);
                     //log.info("Class name: {}", className);
+                    if ("bytea".equals(columns.get(name).getBaseType())) {
+                        className = "java.lang.String";
+                    }
                     columns.get(name).setType(Class.forName(className));
                     String shortName = className;
                     String prefix = "java.lang.";
@@ -106,6 +111,32 @@ public class Table {
                     indexes.put(name, index);
                 }
                 index.getColumns().add(getColumn(columnName));
+            }
+        }
+    }
+
+    public void generateForeignKeys(DataBaseStructure structure) throws Exception {
+        DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
+        try (ResultSet resultSet = metaData.getImportedKeys(null, schema.getName(), getName())) {
+            while(resultSet.next()) {
+                //ResultSetMetaData meta = resultSet.getMetaData();
+                //String sourceSchema = meta.getCo
+                String fkName = resultSet.getString("fk_name");
+                String sourceSchema = resultSet.getString("pktable_schem");
+                String sourceTable = resultSet.getString("pktable_name");
+                String sourceColumn = resultSet.getString("pkcolumn_name");
+                Column source = null;
+                Schema columnSchema = structure.getSchemas().get(sourceSchema);
+                if (columnSchema != null) {
+                    Table columnTable = columnSchema.getTable(sourceTable);
+                    if (columnTable != null) {
+                        source = columnTable.getColumn(sourceColumn);
+                    }
+                }
+                if (source != null) {
+                    getColumn(resultSet.getString("fkcolumn_name")).setForeignKey(new ForeignKey(fkName, sourceSchema, sourceTable, source));
+                }
+
             }
         }
     }

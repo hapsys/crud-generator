@@ -20,63 +20,137 @@
 	<xsl:param name="serviceClass"/>
 	<xsl:param name="servicePackage"/>
 	<xsl:param name="serviceSuffix"/>
+	<xsl:param name="metaClass"/>
+	<xsl:param name="metaPackage"/>
+	<xsl:param name="metaSuffix"/>
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$package"/>;
-
+<xsl:variable name="meta" select="document('src/main/resources/templates/meta-info.xml')/meta-data/table[@name=$table]"/>
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import ru.aeroflot.dict.paginator.PaginatorData;
+<xsl:if test="$meta/roles/controller">import org.springframework.security.access.prepost.PreAuthorize;
+</xsl:if>
 import <xsl:value-of select="$repositoryPackage"/>.<xsl:value-of select="$repositoryClass"/>;
 import <xsl:value-of select="$dtoPackage"/>.<xsl:value-of select="$dtoClass"/>;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
 import <xsl:value-of select="$mapperPackage"/>.<xsl:value-of select="$mapperClass"/>;
 import <xsl:value-of select="$servicePackage"/>.<xsl:value-of select="$serviceClass"/>;
+import <xsl:value-of select="$metaPackage"/>.<xsl:value-of select="$metaClass"/>;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 <xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
+<xsl:variable name="mapping"><xsl:choose>
+	<xsl:when test="count($meta/controller/mapping) = 0"><xsl:value-of select="@name"/></xsl:when>
+	<xsl:otherwise><xsl:value-of select="$meta/controller/mapping/text()"/></xsl:otherwise>
+</xsl:choose></xsl:variable>
+<xsl:variable name="tag"><xsl:choose>
+	<xsl:when test="string-length(@comment) = 0"><xsl:value-of select="@name"/></xsl:when>
+	<xsl:otherwise><xsl:value-of select="@comment"/></xsl:otherwise>
+</xsl:choose></xsl:variable>
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/<xsl:value-of select="@name"/>")
+@Validated
+@Tag(name="<xsl:value-of select="$tag"/>", description="Работа с сущностью \"<xsl:value-of select="$tag"/>\"")
+@RequestMapping("/api/v1/<xsl:value-of select="$mapping"/>")
 public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> {
-
+	<xsl:variable name="primary" select="columns/entry/value[@isPrimaryKey = 'true']"/>
 	private <xsl:value-of select="$serviceClass"/> service;
 	@Autowired
 	public <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>(<xsl:value-of select="$serviceClass"/> service) {
 		this.service = service;
 	}
+	<xsl:variable name="sort" select="$meta/sort/column"/><xsl:variable name="filter" select="$meta/filter/column"/>
+	@GetMapping(value="")
+	<xsl:if test="$meta/roles/controller[@type='list']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='list']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
+	@Operation(summary = "Получить список сущностей \"<xsl:value-of select="$tag"/>\"")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
+	})
+	public ResponseEntity&lt;PaginatorData&lt;<xsl:value-of select="$dtoClass"/>&gt;&gt; get<xsl:value-of select="@className"/>s(
+			@Valid @RequestParam(defaultValue = "1") @Parameter(description="Номер страницы") @Min(1) int page,
+			@Valid @RequestParam(defaultValue = "25") @Parameter(description="Элементов на странице") @Min(1) int size<xsl:if test="$sort">,
+	    	@RequestParam(defaultValue = "") @Parameter(description="Сортировка по полю") String sort</xsl:if><xsl:if test="$filter">,
+			@RequestParam(defaultValue = "") @Parameter(description="Фильтрация") Map&lt;String, String&gt; filter</xsl:if>) {
+		return new ResponseEntity&lt;&gt;(service.get<xsl:value-of select="@className"/>sPaging(page-1, size<xsl:if test="$sort">, sort</xsl:if><xsl:if test="$filter">, filter</xsl:if>), HttpStatus.OK);
+	}
 
-	@GetMapping(value="/")
-	public List&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>s(){
-		return service.get<xsl:value-of select="@className"/>s();
+	@GetMapping(value="/meta/")
+	<xsl:if test="$meta/roles/controller[@type='meta']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='meta']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
+	@Operation(summary = "Получить метаданные сущности \"<xsl:value-of select="$tag"/>\"")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
+	})
+	public ResponseEntity&lt;<xsl:value-of select="$metaClass"/>&gt; get<xsl:value-of select="@className"/>Meta() {
+		<xsl:value-of select="$metaClass"/> result = new <xsl:value-of select="$metaClass"/>();
+		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
 	@GetMapping(value="/{id}")
-	public <xsl:value-of select="$dtoClass"/> get<xsl:value-of select="@className"/>By<xsl:value-of
-		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(@PathVariable("id") <xsl:value-of
-		select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/> id){
+	<xsl:if test="$meta/roles/controller[@type='get']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='get']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
+	@Operation(summary = "Получить запись сущности \"<xsl:value-of select="$tag"/>\" по ключу")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
+	})
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>By<xsl:value-of
+		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(@Valid @PathVariable("id") <xsl:value-of
+		select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/> id) {
 		<xsl:value-of select="$dtoClass"/> result = service.getBy<xsl:value-of
 		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(id);
-		return result;
+		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
-	@PostMapping(value="/")
-	public void add<xsl:value-of select="@className"/>(@Valid @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
-		service.update<xsl:value-of select="@className"/>(dto);
+	@PostMapping(value="")
+	<xsl:if test="$meta/roles/controller[@type='post']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='post']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
+	@Operation(summary = "Создать запись сущности \"<xsl:value-of select="$tag"/>\"")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
+	})
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; create<xsl:value-of select="@className"/>(@RequestBody <xsl:value-of select="$dtoClass"/> dto) {
+		<xsl:value-of select="$dtoClass"/> result = service.create<xsl:value-of select="@className"/>(dto);
+		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
-	@PutMapping(value="/")
-	public void update<xsl:value-of select="@className"/>(@Valid @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
-		service.update<xsl:value-of select="@className"/>(dto);
+	@PutMapping(value="/{id}")
+	<xsl:if test="$meta/roles/controller[@type='put']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='put']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
+	@Operation(summary = "Обновить запись сущности \"<xsl:value-of select="$tag"/>\" по ключу")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
+	})
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; update<xsl:value-of select="@className"/>(@Valid @PathVariable("id") <xsl:value-of
+		select="$primary/@shortType"/> id, @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
+		<xsl:value-of select="$dtoClass"/> result = service.update<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(id, dto);
+		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
+	}
+
+	@DeleteMapping(value="/{id}")
+	<xsl:if test="$meta/roles/controller[@type='delete']">@PreAuthorize("hasAnyRole(<xsl:for-each select="$meta/roles/controller[@type='delete']/role"><xsl:if
+			test="position() != 1">, </xsl:if>'<xsl:value-of select="@name"/>'</xsl:for-each>)")</xsl:if>
+	@Operation(summary = "Удалить запись сущности \"<xsl:value-of select="$tag"/>\" по ключу")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
+	})
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(@Valid @PathVariable("id") <xsl:value-of select="$primary/@shortType"/> id) {
+		service.delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(id);
+		return new ResponseEntity&lt;&gt;(HttpStatus.OK);
 	}
 
 </xsl:for-each>

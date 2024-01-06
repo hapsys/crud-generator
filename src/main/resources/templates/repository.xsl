@@ -10,27 +10,28 @@
 	<xsl:param name="entityPackage"/>
 	<xsl:param name="save"/>
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$package"/>;
-
+<xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value"><xsl:variable name="currentTable" select="."/>
+<xsl:variable name="metaInfo" select="document('src/main/resources/templates/meta-info.xml')/meta-data"/>
+<xsl:variable name="meta" select="$metaInfo/table[@name=$table]"/>
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
 
 import java.util.List;
 import java.util.Optional;
-<xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
-public interface <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> extends CrudRepository&lt;<xsl:value-of select="$entityClass"/>, <xsl:call-template name="pk_type"/>&gt; {
+public interface <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> extends PagingAndSortingRepository&lt;<xsl:value-of select="$entityClass"/>, <xsl:call-template name="pk_type"/>&gt;<xsl:if test="$meta/filter/column">, JpaSpecificationExecutor&lt;<xsl:value-of select="$entityClass"/>&gt;</xsl:if> {
 
 	List &lt;<xsl:value-of select="$entityClass"/>&gt; findAll();<xsl:for-each select="indexes/entry[value/@isUniq = 'false' or count(value/columns[@isPrimaryKey = 'false']) != 0]">
 		<xsl:choose>
 			<xsl:when test="value/@isUniq = 'true'">
 	Optional&lt;<xsl:value-of select="$entityClass"/>&gt; findOneBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:when>
-			<xsl:otherwise>
-	List&lt;<xsl:value-of select="$entityClass"/>&gt; findBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:otherwise>
 		</xsl:choose>
 </xsl:for-each>
-	@Async
-	default &lt;S extends <xsl:value-of select="$entityClass"/>&gt; S saveAsync(S entity) { return save(entity); }
+	Page&lt;<xsl:value-of select="$entityClass"/>&gt; findAll(<xsl:if test="$meta/filter/column">Specification&lt;<xsl:value-of select="$entityClass"/>&gt; searchSpecification, </xsl:if>Pageable pageable);
 
 </xsl:for-each><xsl:value-of select="$save" disable-output-escaping="yes"/>}
 	</xsl:template>

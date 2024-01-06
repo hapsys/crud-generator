@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -15,6 +15,10 @@ import lombok.NoArgsConstructor;
 public class ForeignKey {
     @XmlAttribute
     private String name;
+    @XmlAttribute
+    private String schema;
+    @XmlAttribute
+    private String table;
     @XmlElement
     private Column column;
 }

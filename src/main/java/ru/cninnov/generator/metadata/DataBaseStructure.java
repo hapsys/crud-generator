@@ -1,4 +1,4 @@
-package ru.aeroflot.generator.metadata;
+package ru.cninnov.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
@@ -25,6 +25,12 @@ public class DataBaseStructure {
     public void generateSchemas() throws Exception {
         for (Schema schema: schemas.values()) {
             schema.generateTables();
+        }
+    }
+
+    public void generateForeignKeys() throws Exception {
+        for (Schema schema: schemas.values()) {
+            schema.generateForeignKeys(this);
         }
     }
 }
