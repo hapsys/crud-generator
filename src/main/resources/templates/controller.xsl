@@ -109,7 +109,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
 	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>By<xsl:value-of
-		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(@PathVariable("id") <xsl:value-of
+		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(@Valid @PathVariable("id") <xsl:value-of
 		select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/> id) {
 		<xsl:value-of select="$dtoClass"/> result = service.getBy<xsl:value-of
 		select="columns/entry/value[@isPrimaryKey = 'true']/@className"/>(id);
@@ -135,7 +135,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; update<xsl:value-of select="@className"/>(@PathVariable("id") <xsl:value-of
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; update<xsl:value-of select="@className"/>(@Valid @PathVariable("id") <xsl:value-of
 		select="$primary/@shortType"/> id, @RequestBody <xsl:value-of select="$dtoClass"/> dto) {
 		<xsl:value-of select="$dtoClass"/> result = service.update<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(id, dto);
 		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
@@ -148,7 +148,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(@PathVariable("id") <xsl:value-of select="$primary/@shortType"/> id) {
+	public ResponseEntity&lt;<xsl:value-of select="$dtoClass"/>&gt; delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(@Valid @PathVariable("id") <xsl:value-of select="$primary/@shortType"/> id) {
 		service.delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(id);
 		return new ResponseEntity&lt;&gt;(HttpStatus.OK);
 	}

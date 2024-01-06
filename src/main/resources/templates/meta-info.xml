@@ -54,6 +54,18 @@
             <column name="country_id" multiple="true"/>
         </filter>
     </table>
+    <table name="town">
+        <filter>
+            <column name="name" suffix="IgnoreCase"/>
+            <column name="name_eng" suffix="IgnoreCase"/>
+            <column name="town_id"/>
+        </filter>
+    </table>
+    <table name="airline">
+        <sort>
+            <column name="name" default="true"/>
+        </sort>
+    </table>
     <!-- work dynamic dictionaries -->
     <!-- temp remove
     <table name="partner">
@@ -142,6 +154,11 @@
             <column name="agent_id" multiple="true"/>
         </filter>
     </table>
+    <table name="agent_contract_currency">
+        <filter>
+            <column name="contract_id"/>
+        </filter>
+    </table>
     <!-- Таблица расписаний -->
     <table name="flight">
         <sort>
@@ -154,16 +171,75 @@
             <column name="carrier"/>
             <column name="flight_number" multiple="true"/>
             <column name="aircraft_type"/>
+            <column name="weekday" multiple="true"/>
         </filter>
         <validation>
             <column name="hash_code"></column>
+            <column name="weekday"></column>
         </validation>
         <create>
             sourceDictDto.setHashCode(sourceDictDto.getDepartureDate().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getCarrier() + sourceDictDto.getFlightNumber());
+            sourceDictDto.setWeekday(sourceDictDto.getDepartureDate().toLocalDateTime().getDayOfWeek().getValue());
         </create>
         <update>
             sourceDictDto.setHashCode(sourceDictDto.getDepartureDate().toLocalDateTime().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE) + sourceDictDto.getCarrier() + sourceDictDto.getFlightNumber());
+            sourceDictDto.setWeekday(sourceDictDto.getDepartureDate().toLocalDateTime().getDayOfWeek().getValue());
         </update>
     </table>
+    <!-- Таблица логирования -->
+    <table name="air_waybill_log">
+        <sort>
+            <column name="create_date_time" default="true"/>
+        </sort>
+        <filter>
+            <column name="create_date_time" between="true"/>
+            <column name="source" suffix="ContainsIgnoreCase"/>
+            <column name="air_waybill_id"/>
+        </filter>
+    </table>
+    <table name="flight_period">
+        <sort>
+            <column name="update_date_time" default="true" order="desc"/>
+            <column name="date_start"/>
+            <column name="carrier"/>
+            <column name="flight_number"/>
+            <column name="aircraft_type"/>
+            <column name="departure_airport"/>
+            <column name="arrival_airport"/>
+            <column name="weekday"/>
+            <column name="departure_time"/>
+            <column name="arrival_time"/>
+        </sort>
+        <filter>
+            <column name="hash_code"/>
+            <column name="create_date_time" method="greaterThanOrEqualTo"/>
+            <column name="update_date_time" method="greaterThanOrEqualTo"/>
+            <column name="carrier"/>
+            <column name="flight_number"/>
+            <column name="aircraft_type"/>
+            <column name="date_start" method="greaterThanOrEqualTo"/>
+            <column name="date_stop" method="lessThanOrEqualTo"/>
+        </filter>
+    </table>
 
+    <!--
+    TELEGRAMS
+    -->
+    <table name="cargo_message">
+        <sort>
+            <column name="create_date" default="true"/>
+        </sort>
+        <filter>
+            <column name="create_date" between="true"/>
+            <column name="direction"/>
+            <column name="channel"/>
+            <column name="format"/>
+            <column name="format_type"/>
+            <column name="airline_id"/>
+            <column name="flight_number"/>
+            <column name="sender" suffix="ContainsIgnoreCase"/>
+            <column name="awb_number"/>
+            <column name="aircaft_type"/>
+        </filter>
+    </table>
 </meta-data>
