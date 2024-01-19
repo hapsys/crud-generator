@@ -1,60 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-				xmlns:cnv="ru.cninnov.generator.utils.NodeUtils" xmlns:sxl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output encoding="utf-8" indent="yes" method="text" standalone="yes"/>
+	<xsl:param name="step"/>
 	<xsl:param name="schema"/>
 	<xsl:param name="table"/>
-	<xsl:param name="package"/>
-	<xsl:param name="step"/>
-	<xsl:param name="suffix"/>
-	<xsl:param name="entityClass"/>
-	<xsl:param name="entityPackage"/>
-	<xsl:param name="dtoClass"/>
-	<xsl:param name="dtoPackage"/>
-	<xsl:param name="dtoSuffix"/>
-	<xsl:param name="repositoryPackage"/>
-	<xsl:param name="repositoryClass"/>
-	<xsl:param name="repositorySuffix"/>
-	<xsl:param name="mapperClass"/>
-	<xsl:param name="mapperPackage"/>
-	<xsl:param name="mapperSuffix"/>
-	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$package"/>;
+	<xsl:param name="service_package"/>
+	<xsl:param name="service_suffix"/>
+	<xsl:param name="entityClassName"/>
+	<xsl:param name="entity_package"/>
+	<xsl:param name="modelClassName"/>
+	<xsl:param name="model_package"/>
+	<xsl:param name="model_suffix"/>
+	<xsl:param name="repository_package"/>
+	<xsl:param name="repositoryClassName"/>
+	<xsl:param name="repository_suffix"/>
+	<xsl:param name="mapperClassName"/>
+	<xsl:param name="mapper_package"/>
+	<xsl:param name="mapper_suffix"/>
+	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$service_package"/>;
 
 import lombok.Getter;
 import org.springframework.data.domain.Sort;
-import ru.aeroflot.dict.paginator.PaginatorData;
+import org.c3s.edgo.msdict.server.paginator.PaginatorData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-import reactor.core.publisher.Flux;
 import lombok.RequiredArgsConstructor;
-import <xsl:value-of select="$repositoryPackage"/>.<xsl:value-of select="$repositoryClass"/>;
-import <xsl:value-of select="$dtoPackage"/>.<xsl:value-of select="$dtoClass"/>;
-import <xsl:value-of select="$entityPackage"/>.<xsl:value-of select="$entityClass"/>;
-import <xsl:value-of select="$mapperPackage"/>.<xsl:value-of select="$mapperClass"/>;
-import ru.aeroflot.dict.validation.exceptions.EmptyDataException;
-import ru.aeroflot.dict.validation.exceptions.RecordNotFoundException;
-import ru.aeroflot.dict.util.ConvertUtils;
+import <xsl:value-of select="$repository_package"/>.<xsl:value-of select="$repositoryClassName"/>;
+import <xsl:value-of select="$model_package"/>.<xsl:value-of select="$modelClassName"/>;
+import <xsl:value-of select="$entity_package"/>.<xsl:value-of select="$entityClassName"/>;
+import <xsl:value-of select="$mapper_package"/>.<xsl:value-of select="$mapperClassName"/>;
+import org.c3s.edgo.msdict.server.validation.exceptions.EmptyDataException;
+import org.c3s.edgo.msdict.server.validation.exceptions.RecordNotFoundException;
+import org.c3s.edgo.msdict.server.util.ConvertUtils;
 
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import ru.aeroflot.dict.validation.constraints.Constraint;
-import ru.aeroflot.dict.validation.constraints.ConstraintType;
-import ru.aeroflot.dict.validation.constraints.ConstraintsHolder;
+import org.c3s.edgo.msdict.server.validation.constraints.Constraint;
+import org.c3s.edgo.msdict.server.validation.constraints.ConstraintType;
+import org.c3s.edgo.msdict.server.validation.constraints.ConstraintsHolder;
 
 
-<xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
+<xsl:for-each select="catalogs/entry/value/schemas/entry/value/tables/entry[key=$table]/value">
 <xsl:variable name="currentTable" select="."/>
 <xsl:variable name="metaInfo" select="document('src/main/resources/templates/meta-info.xml')/meta-data"/>
 <xsl:variable name="meta" select="$metaInfo/table[@name=$table]"/>
@@ -62,17 +60,17 @@ import ru.aeroflot.dict.validation.constraints.ConstraintsHolder;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> {
+public class <xsl:value-of select="@className"/><xsl:value-of select="$service_suffix"/> {
 
-	private final <xsl:value-of select="$repositoryClass"/> repository;
-	private final <xsl:value-of select="$mapperClass"/> mapper;
+	private final <xsl:value-of select="$repositoryClassName"/> repository;
+	private final <xsl:value-of select="$mapperClassName"/> mapper;
 	private final ConstraintsHolder constraintsHolder;
 
-	public List&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>s() {
+	public List&lt;<xsl:value-of select="$modelClassName"/>&gt; get<xsl:value-of select="@className"/>s() {
 		return mapper.toDTOs(repository.findAll());
 	}
 	<xsl:variable name="sort" select="$meta/sort/column"/><xsl:variable name="filter" select="$meta/filter/column"/>
-	public PaginatorData&lt;<xsl:value-of select="$dtoClass"/>&gt; get<xsl:value-of select="@className"/>sPaging(int page, int size<xsl:if
+	public PaginatorData&lt;<xsl:value-of select="$modelClassName"/>&gt; get<xsl:value-of select="@className"/>sPaging(int page, int size<xsl:if
 		test="$sort">, String sorting</xsl:if><xsl:if test="$filter">, Map&lt;String, String&gt; params</xsl:if>) {
 		String sortField = null;
 		String sortOrder = null;
@@ -104,6 +102,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 					<xsl:otherwise>
 						active.put("<xsl:value-of select="$name"/>",<xsl:choose>
 							<xsl:when test="$currentColumn/@shortType = 'String'">value</xsl:when>
+							<xsl:when test="$currentColumn/@shortType = 'java.math.BigInteger'">java.math.BigInteger.valueOf(Long.valueOf(value))</xsl:when>
 							<xsl:otherwise><xsl:value-of select="$currentColumn/@shortType"/>.valueOf(value)</xsl:otherwise>
 						</xsl:choose>);
 					</xsl:otherwise>
@@ -132,20 +131,20 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		</xsl:choose>
 		<xsl:choose>
 		<xsl:when test="$filter">
-			Page&lt;<xsl:value-of select="$entityClass"/>&gt; pageTuts = repository.findAll(getSearchSpecification(active), pageable);
+			Page&lt;<xsl:value-of select="$entityClassName"/>&gt; pageTuts = repository.findAll(getSearchSpecification(active), pageable);
 		</xsl:when>
 		<xsl:otherwise>
-		Page&lt;<xsl:value-of select="$entityClass"/>&gt; pageTuts = repository.findAll(pageable);</xsl:otherwise></xsl:choose>
+		Page&lt;<xsl:value-of select="$entityClassName"/>&gt; pageTuts = repository.findAll(pageable);</xsl:otherwise></xsl:choose>
 <!-- 	if (pageTuts.isEmpty()) {
                 throw new EmptyDataException();
             } -->
-		List&lt;<xsl:value-of select="$dtoClass"/>&gt; list = mapper.toDTOs(pageTuts.getContent());
-		PaginatorData&lt;<xsl:value-of select="$dtoClass"/>&gt; response = new PaginatorData&lt;&gt;(pageTuts.getNumber() + 1, pageTuts.getSize(), pageTuts.getTotalElements(), list, sortField, sortOrder, active);
+		List&lt;<xsl:value-of select="$modelClassName"/>&gt; list = mapper.toDTOs(pageTuts.getContent());
+		PaginatorData&lt;<xsl:value-of select="$modelClassName"/>&gt; response = new PaginatorData&lt;&gt;(pageTuts.getNumber() + 1, pageTuts.getSize(), pageTuts.getTotalElements(), list, sortField, sortOrder, active);
 		return response;
 	}
 
 	<xsl:if test="$filter">
-	private Specification&lt;<xsl:value-of select="$entityClass"/>&gt; getSearchSpecification(Map&lt;String, Object&gt; filters) {
+	private Specification&lt;<xsl:value-of select="$entityClassName"/>&gt; getSearchSpecification(Map&lt;String, Object&gt; filters) {
 		return (entityRoot, query, cb) -&gt; {
 			List&lt;Predicate&gt; predicates = new ArrayList&lt;&gt;();
 			<xsl:for-each select="$filter"><xsl:variable name="filter_method"><xsl:choose><xsl:when test="string-length(@method) != 0"><xsl:value-of select="@method"/></xsl:when><xsl:otherwise>equal</xsl:otherwise></xsl:choose></xsl:variable><xsl:variable name="name" select="@name"/><xsl:variable name="currentColumn" select="$currentTable/columns/entry/value[@name = $name]"/><xsl:choose><xsl:when test="@between = 'true'">
@@ -174,8 +173,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 
 
 	<xsl:variable name="primary" select="columns/entry/value[@isPrimaryKey = 'true']"/>
-	public <xsl:value-of select="$dtoClass"/> getBy<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>) {
-		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; optional = repository.findById(<xsl:value-of select="$primary/@methodName"/>);
+	public <xsl:value-of select="$modelClassName"/> getById(<xsl:call-template name="pk_parameters"/>) {
+		Optional&lt;<xsl:value-of select="$entityClassName"/>&gt; optional = repository.findById(<xsl:call-template name="pk_make"/>);
 		if (optional.isEmpty()) {
 			throw new RecordNotFoundException("<xsl:value-of select="$primary/@name"/>", <xsl:value-of select="$primary/@methodName"/>);
 		}
@@ -183,7 +182,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@Transactional
-	public <xsl:value-of select="$dtoClass"/> update<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>, @Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
+	public <xsl:value-of select="$modelClassName"/> update<xsl:value-of select="@className"/>ById(<xsl:call-template
+		name="pk_parameters"/>, @Valid <xsl:value-of select="$modelClassName"/> sourceDictDto) {
 	<xsl:for-each select="indexes/entry/value[@isUniq = 'true']">
 		constraintsHolder.put(new Constraint("<xsl:value-of select="@name"/>", ConstraintType.UNIQUE_KEY, new String[]{<xsl:call-template name="names"/>}, new Object[]{<xsl:call-template name="values"/>}));
 	</xsl:for-each>
@@ -191,14 +191,15 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 		constraintsHolder.put(new Constraint("<xsl:value-of select="foreignKey/@name"/>", ConstraintType.FOREIGN_KEY, new String[]{"<xsl:value-of
 			select="@name"/>", "<xsl:value-of select="foreignKey/@schema"/>.<xsl:value-of select="foreignKey/@table"/>.<xsl:value-of select="foreignKey/column/@name"/>"}, new Object[]{sourceDictDto.get<xsl:value-of select="@className"/>()}));
 	</xsl:for-each>
-		Optional&lt;<xsl:value-of select="$entityClass"/>&gt; <xsl:value-of select="@methodName"/> = repository.findById(<xsl:value-of select="$primary/@methodName"/>);
+		Optional&lt;<xsl:value-of select="$entityClassName"/>&gt; <xsl:value-of select="@methodName"/> = repository.findById(<xsl:call-template
+		name="pk_make"/>);
 		if (!<xsl:value-of select="@methodName"/>.isEmpty()) {
 			sourceDictDto.set<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@methodName"/>);
 			<xsl:for-each select="$currentTable/columns/entry/value"><xsl:variable name="currentColumn" select="."/><xsl:choose><xsl:when test="$metaInfo/globals/defaults/column[@name = $currentColumn/@name]/update">sourceDictDto.set<xsl:value-of select="$currentColumn/@className"/>(<xsl:value-of select="$metaInfo/globals/defaults/column[@name = $currentColumn/@name]/update/text()"/>);
 			</xsl:when><xsl:otherwise/></xsl:choose>
 			</xsl:for-each>
 
-			<xsl:value-of select="$entityClass"/> entity = <xsl:value-of select="@methodName"/>.get();
+			<xsl:value-of select="$entityClassName"/> entity = <xsl:value-of select="@methodName"/>.get();
 			<xsl:if test="string-length($meta/update) != 0">
 				<xsl:value-of select="$meta/update" disable-output-escaping="yes"/>
 			</xsl:if>
@@ -211,7 +212,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@Transactional
-	public <xsl:value-of select="$dtoClass"/> create<xsl:value-of select="@className"/>(@Valid <xsl:value-of select="$dtoClass"/> sourceDictDto) {
+	public <xsl:value-of select="$modelClassName"/> create<xsl:value-of select="@className"/>(@Valid <xsl:value-of select="$modelClassName"/> sourceDictDto) {
 		<xsl:for-each select="indexes/entry/value[@isUniq = 'true']">
 		constraintsHolder.put(new Constraint("<xsl:value-of select="@name"/>", ConstraintType.UNIQUE_KEY, new String[]{<xsl:call-template name="names"/>}, new Object[]{<xsl:call-template name="values"/>}));
 		</xsl:for-each>
@@ -235,8 +236,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
 	}
 
 	@Transactional
-	public void delete<xsl:value-of select="@className"/>By<xsl:value-of select="$primary/@className"/>(<xsl:value-of select="$primary/@shortType"/><xsl:text> </xsl:text><xsl:value-of select="$primary/@methodName"/>) {
-		repository.deleteById(<xsl:value-of select="$primary/@methodName"/>);
+	public void delete<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_parameters"/>) {
+		repository.deleteById(<xsl:call-template name="pk_make"/>);
 	}
 	<xsl:if test="$meta/sort">
 	@RequiredArgsConstructor
@@ -298,6 +299,25 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/>
     -->
 	<xsl:template name="pk_type">
 		<xsl:value-of select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/>
+	</xsl:template>
+	<!--
+    //
+    //
+    //
+    -->
+	<xsl:template name="pk_parameters"><xsl:for-each select="columns/entry/value[@isPrimaryKey = 'true']"><xsl:if test="position() != 1">, </xsl:if><xsl:value-of select="@shortType"/><xsl:text> </xsl:text><xsl:value-of select="@methodName"/></xsl:for-each>
+	</xsl:template>
+	<!--
+    //
+    //
+    //
+    -->
+	<xsl:template name="pk_make">
+		<xsl:choose>
+			<xsl:when test="count(columns/entry/value[@isPrimaryKey = 'true']) &gt; 1">new <xsl:value-of select="$entityClassName"/>.<xsl:value-of
+					select="@className"/>Id(<xsl:for-each select="columns/entry/value[@isPrimaryKey = 'true']"><xsl:if test="position() != 1">, </xsl:if><xsl:value-of select="@methodName"/></xsl:for-each>)</xsl:when>
+			<xsl:otherwise><xsl:value-of select="columns/entry/value[@isPrimaryKey = 'true']/@methodName"/></xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
 </xsl:stylesheet>

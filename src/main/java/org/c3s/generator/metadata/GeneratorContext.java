@@ -1,8 +1,8 @@
-package ru.cninnov.generator.metadata;
+package org.c3s.generator.metadata;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
+import org.c3s.generator.config.properties.GeneratorConfigProperties;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

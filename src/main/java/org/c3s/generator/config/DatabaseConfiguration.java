@@ -1,4 +1,4 @@
-package ru.cninnov.generator.config;
+package org.c3s.generator.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

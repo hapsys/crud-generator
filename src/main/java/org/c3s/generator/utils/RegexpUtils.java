@@ -1,4 +1,4 @@
-package ru.cninnov.generator.utils;
+package org.c3s.generator.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

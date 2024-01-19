@@ -1,10 +1,10 @@
-package ru.cninnov.generator.metadata;
+package org.c3s.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import ru.cninnov.generator.utils.Utils;
+import org.c3s.generator.utils.Utils;
 
 @Data
 @NoArgsConstructor

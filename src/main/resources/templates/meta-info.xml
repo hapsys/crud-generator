@@ -2,13 +2,16 @@
 <meta-data>
     <globals>
         <validation>
+<!--
             <column name="create_user"/>
             <column name="create_date"/>
             <column name="update_user"/>
             <column name="update_date"/>
             <column name="is_deleted"/>
+-->
         </validation>
         <defaults>
+<!--
             <column name="create_user">
                 <create>"SYSTEM"</create>
             </column>
@@ -24,9 +27,10 @@
             <column name="is_deleted">
                 <create>false</create>
             </column>
-
+-->
         </defaults>
     </globals>
+    <!--
     <table name="country">
         <controller>
             <mapping>countries</mapping>
@@ -66,6 +70,7 @@
             <column name="name" default="true"/>
         </sort>
     </table>
+    -->
     <!-- work dynamic dictionaries -->
     <!-- temp remove
     <table name="partner">
@@ -119,6 +124,7 @@
         </roles>
     </table>
     -->
+    <!--
     <table name="agent_contract_constraint_flight">
         <filter>
             <column name="contract_id" multiple="true"/>
@@ -159,7 +165,9 @@
             <column name="contract_id"/>
         </filter>
     </table>
+    -->
     <!-- Таблица расписаний -->
+    <!--
     <table name="flight">
         <sort>
             <column name="departure_date" default="true"/>
@@ -186,7 +194,9 @@
             sourceDictDto.setWeekday(sourceDictDto.getDepartureDate().toLocalDateTime().getDayOfWeek().getValue());
         </update>
     </table>
+    -->
     <!-- Таблица логирования -->
+    <!--
     <table name="air_waybill_log">
         <sort>
             <column name="create_date_time" default="true"/>
@@ -221,10 +231,11 @@
             <column name="date_stop" method="lessThanOrEqualTo"/>
         </filter>
     </table>
-
+    -->
     <!--
     TELEGRAMS
     -->
+    <!--
     <table name="cargo_message">
         <sort>
             <column name="create_date" default="true"/>
@@ -240,6 +251,16 @@
             <column name="sender" suffix="ContainsIgnoreCase"/>
             <column name="awb_number"/>
             <column name="aircaft_type"/>
+        </filter>
+    </table>
+    -->
+    <!-- ed-go test -->
+    <table name="commodity_deliver">
+        <sort>
+            <column name="mission_id" default="true"/>
+        </sort>
+        <filter>
+            <column name="mission_id"/>
         </filter>
     </table>
 </meta-data>

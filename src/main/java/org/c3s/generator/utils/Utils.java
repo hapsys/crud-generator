@@ -1,4 +1,4 @@
-package ru.cninnov.generator.utils;
+package org.c3s.generator.utils;
 
 public class Utils {
     public static String generateName(String name, boolean isMethod) {

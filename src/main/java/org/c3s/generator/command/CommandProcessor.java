@@ -1,17 +1,18 @@
-package ru.cninnov.generator.command;
+package org.c3s.generator.command;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import lombok.extern.slf4j.Slf4j;
+import org.c3s.generator.config.AbstractGeneratorConfigProperties;
+import org.c3s.generator.metadata.DataBaseStructure;
+import org.c3s.generator.metadata.Table;
+import org.c3s.generator.utils.RegexpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
-import ru.cninnov.generator.config.AbstractGeneratorConfigProperties;
-import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
-import ru.cninnov.generator.metadata.DataBaseStructure;
-import ru.cninnov.generator.metadata.GeneratorContext;
-import ru.cninnov.generator.utils.RegexpUtils;
+import org.c3s.generator.config.properties.GeneratorConfigProperties;
+import org.c3s.generator.metadata.GeneratorContext;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,7 +50,6 @@ public class CommandProcessor implements CommandLineRunner {
     @Autowired
     private DataBaseStructure structure;
 
-    File root;
     @Override
     public void run(String... args) throws Exception {
         log.info("Run application!");
@@ -60,34 +60,42 @@ public class CommandProcessor implements CommandLineRunner {
         GeneratorContext.instance.setConnection(connection);
         GeneratorContext.instance.setMetaData(metaData);
 
-        //DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
+        // metaData = dataSource.getConnection().getMetaData();
+
 
         /*
+        try (ResultSet tables = metaData.getTables("ed-go", null, null, new String[]{"TABLE"})) {
+            while(tables.next()) {
 
-        try (ResultSet resultSet = metaData.getColumns(null, "msdict", "country", null)) {
+                String name = tables.getString("table_name");
+                String comment = tables.getString("remarks");
+                log.info("Table: \"{}\". Comment: {}", name, comment);
+            }
+        }
+        System.exit(0);
+
+        try (ResultSet resultSet = metaData.getColumns("ed-go", null, "systems", null)) {
             while(resultSet.next()) {
                 ResultSetMetaData meta = resultSet.getMetaData();
                 for(int i = 1; i < meta.getColumnCount(); i++) {
-                    log.debug("Table \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
+                    log.info("Table \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
                 }
-                log.debug("---------------------------------------------------------------------");
+                log.info("---------------------------------------------------------------------");
             }
         }
         System.exit(0);
          */
 
-        for (String schema: properties.getSchemas()) {
-            structure.addSchema(schema);
+        if (properties.getCatalog() != null) {
+            for (String catalog : properties.getCatalog()) {
+                structure.addCatalog(catalog);
+            }
+        } else {
+            structure.addCatalog(null);
         }
-        structure.generateSchemas();
+        structure.generateCatalogs();
 
         structure.generateForeignKeys();
-
-        /**
-         * Prepare paremateres
-         */
-        root = new File(properties.getRoot());
-        root.mkdirs();
 
         JAXBContext jaxbContext = org.eclipse.persistence.jaxb.JAXBContextFactory
                 .createContext(new Class[]{DataBaseStructure.class}, null);
@@ -107,8 +115,12 @@ public class CommandProcessor implements CommandLineRunner {
         /**
          * Transformation properties
          */
-        Map<String, Object> props = new HashMap<>() {{put("root", properties.getRoot());}};
-
+        Map<String, Object> props = new HashMap<>() {{
+            //put("root", properties.getRoot());
+            if (properties.getProperties() != null) {
+                putAll(properties.getProperties());
+            }
+        }};
         // --------------------------------------------------------------------------------------------------
 
 
@@ -116,6 +128,19 @@ public class CommandProcessor implements CommandLineRunner {
 
         log.info("Configuration size {}",properties.getSteps().size());
         properties.getSteps().forEach((x,y)-> log.info(x));
+        properties.getSteps().forEach((x,y)->{
+            props.put(x + "_package", y.getPackages());
+            props.put(x + "_suffix", y.getSuffix());
+        });
+
+        for (String key: properties.getSteps().keySet()) {
+            AbstractGeneratorConfigProperties stepProps = properties.getSteps().get(key);
+            if (stepProps.isSingle()) {
+
+            } else {
+                processMultiFilePart(document, key, stepProps, props);
+            }
+        }
     }
 
     private void parseCommandLine(String[] cmdLine) {
@@ -179,7 +204,60 @@ public class CommandProcessor implements CommandLineRunner {
         }
     }
 
-    private void processParts(AbstractGeneratorConfigProperties part, Document document) throws Exception {
+    private void processMultiFilePart(Document document, String step, AbstractGeneratorConfigProperties stepProps, Map<String, Object> commonProps) throws Exception {
+        String rootPath = stepProps.getRoot() != null ? stepProps.getRoot():properties.getRoot();
+        File root = new File(rootPath);
+        root.mkdirs();
+        Transformer transformer = getTransformer(stepProps.getTemplate());
+        Map<String, Object> props = new HashMap<>(commonProps);
+        props.put("step", step);
+        structure.getCatalogs().forEach((catalogName, catalog) -> {
+            props.put("catalogue", catalogName != null?catalogName:"");
+            catalog.getSchemas().forEach((schemaName, schema) -> {
+                props.put("schema", schemaName != null?schemaName:"");
+                String pkg = stepProps.getPackages();
+                File pkgDir;
+                pkgDir = new File(root, pkg.replace('.','/'));
+                pkgDir.mkdirs();
+                schema.getTables().forEach((tableName, table) -> {
+                    props.put("table", tableName);
+                    properties.getSteps().forEach((x,y)->{
+                        props.put(x + "ClassName", table.getClassName() + y.getSuffix());
+                    });
+                    String classFileName = table.getClassName() + stepProps.getSuffix() + ".java";
+                    log.debug("Filename: {}", classFileName);
+                    File classFile = new File(pkgDir, classFileName);
+
+                    if (Objects.nonNull(stepProps.getSavePartStart())) {
+                        String save = "";
+                        String savePartStart = stepProps.getSavePartStart();
+                        log.debug("Check if file contains: {}", savePartStart);
+                        if (classFile.exists() && !savePartStart.isEmpty()) {
+                            try {
+                                String ctx = readFile(classFile);
+                                log.debug("File contents: {}", ctx);
+                                List<String> matches = new ArrayList<>();
+                                if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
+                                    //log.debug("{}", matches);
+                                    save = matches.get(1);
+                                }
+                            } catch (IOException e) {
+                                log.error(e.getMessage(), e);
+                            }
+                        }
+                        props.put("save", save);
+                    }
+                    // Save result
+                    try (PrintWriter writer = new PrintWriter(classFile)) {
+                        String result = transformXML(document, transformer, props);
+                        writer.print(result);
+                        log.debug("{}", result);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                });
+            });
+        });
         /*
         Map<String, Object> props = new HashMap<>() {{put("root", properties.getRoot());}};
         props.put("step", "process");
@@ -302,6 +380,7 @@ public class CommandProcessor implements CommandLineRunner {
         DOMSource xslSource = new DOMSource(xsl);
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer(xslSource);
+        //transformer.setOutputProperty(OutputKeys.ENCODING,"UTF-8");
 
         return transformer;
     }
@@ -313,6 +392,7 @@ public class CommandProcessor implements CommandLineRunner {
              * Set Parameters
              */
             if (parameters != null) {
+                log.info("Transform parameters: {}", parameters);
                 for (String param_name : parameters.keySet()) {
                     //log.debug(param_name + " {" + parameters.get(param_name) + "}");
                     transformer.setParameter(param_name, parameters.get(param_name));
@@ -324,7 +404,8 @@ public class CommandProcessor implements CommandLineRunner {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             StreamResult streamresult = new StreamResult(buffer);
             transformer.transform(domSource, streamresult);
-            result = buffer.toString(transformer.getOutputProperty(OutputKeys.ENCODING));
+            //result = buffer.toString(transformer.getOutputProperty(OutputKeys.ENCODING));
+            result = buffer.toString();
 
         return result;
     }

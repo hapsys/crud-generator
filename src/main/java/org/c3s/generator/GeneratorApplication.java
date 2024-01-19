@@ -1,9 +1,9 @@
-package ru.cninnov.generator;
+package org.c3s.generator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
+import org.c3s.generator.config.properties.GeneratorConfigProperties;
 
 @EnableConfigurationProperties(GeneratorConfigProperties.class)
 @SpringBootApplication

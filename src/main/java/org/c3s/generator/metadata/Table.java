@@ -1,11 +1,11 @@
-package ru.cninnov.generator.metadata;
+package org.c3s.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import ru.cninnov.generator.utils.Utils;
+import org.c3s.generator.utils.Utils;
 
 import java.sql.*;
 import java.util.LinkedHashMap;
@@ -53,7 +53,7 @@ public class Table {
         DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
 
 
-        try (ResultSet resultSet = metaData.getColumns(null, this.schema.getName(), getName(), null)) {
+        try (ResultSet resultSet = metaData.getColumns(this.schema.getCatalog().getName(), this.schema.getName(), getName(), null)) {
             while(resultSet.next()) {
                 String name = resultSet.getString("COLUMN_NAME");
                 String comment = resultSet.getString("REMARKS");
@@ -69,7 +69,8 @@ public class Table {
         }
 
         // get columns class type
-        String sql = "SELECT * FROM " + schema.getName() + "." + name + " WHERE 1=0 LIMIT 1";
+        String useSchema = schema.getName() != null?schema.getName() + ".":"";
+        String sql = "SELECT * FROM " + useSchema + name + " WHERE 1=0 LIMIT 1";
         try (PreparedStatement stmp = connection.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_UPDATABLE, java.sql.ResultSet.HOLD_CURSORS_OVER_COMMIT)) {
             ResultSetMetaData resultSetMetaData = stmp.getMetaData();
             if (resultSetMetaData != null) {
@@ -91,18 +92,18 @@ public class Table {
             }
         }
         // get primary keys
-        try (ResultSet resultSet = metaData.getPrimaryKeys(null, schema.getName(), getName())) {
+        try (ResultSet resultSet = metaData.getPrimaryKeys(this.schema.getCatalog().getName(), schema.getName(), getName())) {
             while (resultSet.next()) {
                 String name = resultSet.getString("column_name");
                 columns.get(name).setPrimaryKey(true);
             }
         }
         // get indexes
-        try (ResultSet resultSet = metaData.getIndexInfo(null, schema.getName(), getName(), false, false)) {
+        try (ResultSet resultSet = metaData.getIndexInfo(this.schema.getCatalog().getName(), schema.getName(), getName(), false, false)) {
             while(resultSet.next()) {
                 String columnName = resultSet.getString("column_name");
                 String name = resultSet.getString("index_name");
-                boolean isUniq = "f".equals(resultSet.getString("non_unique"));
+                boolean isUniq = "f".equals(resultSet.getString("non_unique")) || "0".equals(resultSet.getString("non_unique"));
                 Index index;
                 if (indexes.containsKey(name)) {
                     index = indexes.get(name);
@@ -111,6 +112,14 @@ public class Table {
                     indexes.put(name, index);
                 }
                 index.getColumns().add(getColumn(columnName));
+
+                /*
+                ResultSetMetaData meta = resultSet.getMetaData();
+                for(int i = 1; i < meta.getColumnCount(); i++) {
+                    log.info("Table \"{}\":\t{}", meta.getColumnLabel(i), resultSet.getString(i));
+                }
+                log.info("---------------------------------------------------------------------");
+                */
             }
         }
     }
@@ -126,6 +135,7 @@ public class Table {
                 String sourceTable = resultSet.getString("pktable_name");
                 String sourceColumn = resultSet.getString("pkcolumn_name");
                 Column source = null;
+                /*
                 Schema columnSchema = structure.getSchemas().get(sourceSchema);
                 if (columnSchema != null) {
                     Table columnTable = columnSchema.getTable(sourceTable);
@@ -136,7 +146,7 @@ public class Table {
                 if (source != null) {
                     getColumn(resultSet.getString("fkcolumn_name")).setForeignKey(new ForeignKey(fkName, sourceSchema, sourceTable, source));
                 }
-
+                */
             }
         }
     }

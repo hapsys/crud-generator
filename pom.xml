@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.2</version>
+        <version>3.2.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ru.aeroflot</groupId>
@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <postgresql.version>42.2.9</postgresql.version>
+        <postgresql.version>42.7.1</postgresql.version>
         <maven.test.skip>true</maven.test.skip>
     </properties>
     <dependencies>
@@ -39,7 +39,12 @@
             <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.2.0</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>

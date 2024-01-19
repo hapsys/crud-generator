@@ -1,10 +1,10 @@
-package ru.cninnov.generator.metadata;
+package org.c3s.generator.metadata;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.cninnov.generator.config.properties.GeneratorConfigProperties;
+import org.c3s.generator.config.properties.GeneratorConfigProperties;
 
 import javax.sql.DataSource;
 import java.sql.DatabaseMetaData;
@@ -23,13 +23,17 @@ public class Schema {
     @XmlTransient
     private DataSource dataSource;
 
+    @XmlTransient
+    private Catalog catalog;
+
 
     @XmlAttribute
     private String name;
     @XmlElement
     private Map<String, Table> tables = new LinkedHashMap<>();
 
-    public Schema(String name) {
+    public Schema(Catalog catalog, String name) {
+        this.catalog = catalog;
         this.name = name;
     }
 
@@ -40,20 +44,22 @@ public class Schema {
     public void generateTables() throws Exception {
 
         props = GeneratorContext.instance.getProperties().getTables();
-
-        List<String> include = props.getInclude() != null? Arrays.asList(props.getInclude()): new ArrayList<>();
-        List<String> exclude = props.getExclude() != null? Arrays.asList(props.getExclude()): new ArrayList<>();
+        //log.info("Tables include: {}", props.getInclude());
+        //log.info("Tables exclude: {}", props.getExclude());
+        List<String> include = props.getInclude();
+        List<String> exclude = props.getExclude();
 
         //Connection connection = GeneratorContext.instance.getConnection();
         DatabaseMetaData metaData = GeneratorContext.instance.getMetaData();
 
-        try (ResultSet tables = metaData.getTables(null, this.getName(), null, new String[]{"TABLE"})) {
+        try (ResultSet tables = metaData.getTables(catalog != null?catalog.getName():null, this.getName(), null, new String[]{"TABLE"})) {
             while(tables.next()) {
 
                 String name = tables.getString("table_name");
                 String comment = tables.getString("remarks");
 
                 boolean addFlag = include.size() == 0 || include.contains(name);
+                //log.info("Table \"{}\" include: {}", name, addFlag);
                 addFlag = addFlag && (exclude.size() == 0 || !exclude.contains(name));
 
                 if (addFlag) {

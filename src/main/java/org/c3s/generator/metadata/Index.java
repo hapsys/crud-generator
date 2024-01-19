@@ -1,4 +1,4 @@
-package ru.cninnov.generator.metadata;
+package org.c3s.generator.metadata;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;

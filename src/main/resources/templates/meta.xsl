@@ -2,24 +2,23 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 				xmlns:csl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output encoding="utf-8" indent="yes" method="text" standalone="yes"/>
+	<xsl:param name="step"/>
 	<xsl:param name="schema"/>
 	<xsl:param name="table"/>
-	<xsl:param name="package"/>
-	<xsl:param name="step"/>
-	<xsl:param name="suffix"/>
-	<xsl:param name="suffix-data"/>
+	<xsl:param name="meta_package"/>
+	<xsl:param name="meta_suffix"/>
 	<xsl:template match="/dataBaseStructure">
-package <xsl:value-of select="$package"/>;
+package <xsl:value-of select="$meta_package"/>;
 
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.aeroflot.dict.meta.ColumnMetainfo;
+import org.c3s.edgo.msdict.server.meta.ColumnMetainfo;
 
-<xsl:for-each select="schemas/entry/value/tables/entry[key=$table]/value">
+<xsl:for-each select="catalogs/entry/value/schemas/entry/value/tables/entry[key=$table]/value">
 <xsl:variable name="metaInfo" select="document('src/main/resources/templates/meta-info.xml')/meta-data"/>
 <xsl:variable name="meta" select="$metaInfo/table[@name=$table]"/>
 @Data
-public class <xsl:value-of select="@className"/><xsl:value-of select="$suffix"/> {
+public class <xsl:value-of select="@className"/><xsl:value-of select="$meta_suffix"/> {
 	private String tableComment = "<xsl:value-of select="value/@comment" disable-output-escaping="yes"/>";
 	<xsl:for-each select="columns/entry"><xsl:variable name="columnName" select="value/@name"/>
 	<xsl:if test="string-length(value/@comment) != 0">
