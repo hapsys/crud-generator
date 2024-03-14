@@ -119,6 +119,10 @@ public class RegexpUtils {
         return result;
     }
 
+    public static boolean preg_match(String pattern, String input) {
+        return preg_match(pattern, input, null);
+    }
+
     /**
      * Проверка того что в строке содержится некоторый шаблон и возвращается список со всеми найденными группами совпадений
      * @param pattern  шаблон (regexp)

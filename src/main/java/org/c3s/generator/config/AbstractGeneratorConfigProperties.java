@@ -12,6 +12,7 @@ public class AbstractGeneratorConfigProperties {
     //private boolean split;          // schema split (packages + schema)
     private String  template;       // uses template for generate class(es)
     private String  suffix;         // ClassSuffix (if single == true - using as common ClassName)
+    //private String  extension;      // extension for file (default java)
     private String  savePartStart;  //
-
+    private String  fileName;       // Template (Velocity) for generated file name (default ${class_name}${suffix}.java// )
 }

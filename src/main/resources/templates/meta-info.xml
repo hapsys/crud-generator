@@ -29,6 +29,11 @@
             </column>
 -->
         </defaults>
+        <cache regexp_="~stations~isu">
+            <table>systems</table>
+            <table>stations</table>
+            <table>bodies</table>
+        </cache>
     </globals>
     <!--
     <table name="country">
@@ -261,6 +266,14 @@
         </sort>
         <filter>
             <column name="mission_id"/>
+        </filter>
+    </table>
+    <table name="systems" cache="true">
+        <sort>
+            <column name="name" default="true"/>
+        </sort>
+        <filter>
+            <column name="name"/>
         </filter>
     </table>
 </meta-data>

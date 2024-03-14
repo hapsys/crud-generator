@@ -3,10 +3,12 @@ package org.c3s.generator.command;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.c3s.generator.config.AbstractGeneratorConfigProperties;
 import org.c3s.generator.metadata.DataBaseStructure;
 import org.c3s.generator.metadata.Table;
 import org.c3s.generator.utils.RegexpUtils;
+import org.c3s.transformers.velocity.VelocityTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -205,7 +207,9 @@ public class CommandProcessor implements CommandLineRunner {
     }
 
     private void processMultiFilePart(Document document, String step, AbstractGeneratorConfigProperties stepProps, Map<String, Object> commonProps) throws Exception {
+        VelocityTransformer velocity = new VelocityTransformer();
         String rootPath = stepProps.getRoot() != null ? stepProps.getRoot():properties.getRoot();
+        //String ext = stepProps.getExtension() == null?"java":stepProps.getExtension();
         File root = new File(rootPath);
         root.mkdirs();
         Transformer transformer = getTransformer(stepProps.getTemplate());
@@ -217,14 +221,27 @@ public class CommandProcessor implements CommandLineRunner {
                 props.put("schema", schemaName != null?schemaName:"");
                 String pkg = stepProps.getPackages();
                 File pkgDir;
-                pkgDir = new File(root, pkg.replace('.','/'));
+                if (pkg != null) {
+                    pkgDir = new File(root, pkg.replace('.', '/'));
+                } else {
+                    pkgDir = root;
+                }
                 pkgDir.mkdirs();
                 schema.getTables().forEach((tableName, table) -> {
                     props.put("table", tableName);
                     properties.getSteps().forEach((x,y)->{
-                        props.put(x + "ClassName", table.getClassName() + y.getSuffix());
+                        props.put(x + "_class_name", table.getClassName() + y.getSuffix());
                     });
-                    String classFileName = table.getClassName() + stepProps.getSuffix() + ".java";
+                    String classFileName;
+                    if (!StringUtils.isEmpty(stepProps.getFileName())) {
+                        try {
+                            classFileName = velocity.transform(props, stepProps.getFileName(), null);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        classFileName = table.getClassName() + stepProps.getSuffix() + ".java";
+                    }
                     log.debug("Filename: {}", classFileName);
                     File classFile = new File(pkgDir, classFileName);
 
@@ -258,116 +275,6 @@ public class CommandProcessor implements CommandLineRunner {
                 });
             });
         });
-        /*
-        Map<String, Object> props = new HashMap<>() {{put("root", properties.getRoot());}};
-        props.put("step", "process");
-        props.put("suffix", part.getSuffix());
-        props.put("suffix-data", Objects.nonNull(part.getSuffixData())?part.getSuffixData():"");
-        String entityPackageName = properties.getEntities().getPackages();
-        String entitySuffix = properties.getEntities().getSuffix();
-        String dtoPackageName = properties.getModel().getPackages();
-        String dtoSuffix = properties.getModel().getSuffix();
-        String repositoryPackageName = properties.getRepository().getPackages();
-        String repositorySuffix = properties.getRepository().getSuffix();
-        String mapperPackageName = properties.getMapper().getPackages();
-        String mapperSuffix = properties.getMapper().getSuffix();
-        String servicePackageName = properties.getService().getPackages();
-        String serviceSuffix = properties.getService().getSuffix();
-        String metaPackageName = properties.getMeta().getPackages();
-        String metaSuffix = properties.getMeta().getSuffix();
-        props.put("entitySuffix", entitySuffix);
-        props.put("dtoSuffix", dtoSuffix);
-        props.put("repositorySuffix", repositorySuffix);
-        props.put("mapperSuffix", mapperSuffix);
-        props.put("serviceSuffix", serviceSuffix);
-        props.put("metaSuffix", metaSuffix);
-        // Load xslt template file
-        Transformer transformer = getTransformer(part.getTemplate());
-
-        for (String schemaName: structure.getSchemas().keySet()) {
-            props.put("schema", schemaName);
-            String packageSuffix = "";
-            if (properties.getSchemaPackages() != null) {
-                if (properties.getSchemaPackages() != null && properties.getSchemaPackages().containsKey(schemaName)) {
-                    packageSuffix = "." + properties.getSchemaPackages().get(schemaName);
-                } else {
-                    packageSuffix = "." + schemaName;
-                }
-            }
-            String pkg = part.getPackages() + packageSuffix;
-            File pkgDir;
-            pkgDir = new File(root, pkg.replace('.','/'));
-            pkgDir.mkdirs();
-            props.put("package", pkg);
-            props.put("entityPackage", entityPackageName + packageSuffix);
-            props.put("dtoPackage", dtoPackageName + packageSuffix);
-            props.put("repositoryPackage", repositoryPackageName + packageSuffix);
-            props.put("mapperPackage", mapperPackageName + packageSuffix);
-            props.put("servicePackage", servicePackageName + packageSuffix);
-            props.put("metaPackage", metaPackageName + packageSuffix);
-            for (String tableName: structure.getSchemas().get(schemaName).getTables().keySet()) {
-                String className = structure.getSchemas().get(schemaName).getTable(tableName).getClassName();
-                String entityClassName = className + properties.getEntities().getSuffix();
-                String dtoClassName = className + properties.getModel().getSuffix();
-                String repositoryClassName = className + properties.getRepository().getSuffix();
-                String mapperClassName = className + mapperSuffix;
-                String serviceClassName = className + serviceSuffix;
-                String metaClassName = className + metaSuffix;
-                props.put("table", tableName);
-                props.put("entityClass", entityClassName);
-                props.put("dtoClass", dtoClassName);
-                props.put("repositoryClass", repositoryClassName);
-                props.put("mapperClass", mapperClassName);
-                props.put("serviceClass", serviceClassName);
-                props.put("metaClass", metaClassName);
-                props.put("step", "process");
-
-                String classFileName = structure.getSchemas().get(schemaName).getTable(tableName).getClassName() +
-                        part.getSuffix() + ".java";
-                log.debug("Filename: {}", classFileName);
-                File classFile = new File(pkgDir, classFileName);
-
-                if (Objects.nonNull(part.getSavePartStart())) {
-                    String save = "";
-                    String savePartStart = part.getSavePartStart();
-                    log.debug("Check if file contains: {}", savePartStart);
-                    if (classFile.exists() && !savePartStart.isEmpty()) {
-                        String ctx = readFile(classFile);
-                        log.debug("File contents: {}", ctx);
-                        List<String> matches = new ArrayList<>();
-                        if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
-                            //log.debug("{}", matches);
-                            save = matches.get(1);
-                        }
-                    }
-                    props.put("save", save);
-                }
-
-
-                String result = transformXML(document, transformer, props);
-                // Save result
-                try (PrintWriter writer = new PrintWriter(classFile)) {
-                    writer.print(result);
-                }
-                log.debug("{}", result);
-                if (part.isGenerateData()) {
-                    props.put("step", "additional");
-
-                    result = transformXML(document, transformer, props);
-                    // Save result
-                    classFileName = structure.getSchemas().get(schemaName).getTable(tableName).getClassName() +
-                            part.getSuffixData() + ".java";
-                    //log.debug("Filename: {}", classFileName);
-                    classFile = new File(pkgDir, classFileName);
-                    try (PrintWriter writer = new PrintWriter(classFile)) {
-                        writer.print(result);
-                    }
-                    log.debug("{}", result);
-                }
-            }
-        }
-       */
-
     }
 
     private Transformer getTransformer(String fileName) throws Exception {
@@ -392,7 +299,7 @@ public class CommandProcessor implements CommandLineRunner {
              * Set Parameters
              */
             if (parameters != null) {
-                log.info("Transform parameters: {}", parameters);
+                log.debug("Transform parameters: {}", parameters);
                 for (String param_name : parameters.keySet()) {
                     //log.debug(param_name + " {" + parameters.get(param_name) + "}");
                     transformer.setParameter(param_name, parameters.get(param_name));

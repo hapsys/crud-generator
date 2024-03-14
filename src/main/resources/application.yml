@@ -30,7 +30,7 @@ generator:
   # msdict: msdict
   # msdictdynamic: cargo
   tables:
-    include: #commodity_deliver, roles
+    include: #systems, stations
     exclude: #system_faction_pending_states, system_faction_recovery_states
   steps:
     entity:
@@ -38,6 +38,7 @@ generator:
       packages: org.c3s.edgo.msdict.server.crud.entity
       template: src/main/resources/templates/entity.xsl
       suffix: Entity
+      file-name: ${entity_class_name}.java
     repository:
       enable: true
       packages: org.c3s.edgo.msdict.server.crud.repository

@@ -7,7 +7,7 @@
 	<xsl:param name="repository_package"/>
 	<xsl:param name="repository_suffix"/>
 	<xsl:param name="entity_package"/>
-	<xsl:param name="entityClassName"/>
+	<xsl:param name="entity_class_name"/>
 	<xsl:param name="save"/>
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$repository_package"/>;
 <xsl:for-each select="catalogs/entry/value/schemas/entry/value/tables/entry[key=$table]/value"><xsl:variable name="currentTable" select="."/>
@@ -20,19 +20,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import <xsl:value-of select="$entity_package"/>.<xsl:value-of select="$entityClassName"/>;
+import <xsl:value-of select="$entity_package"/>.<xsl:value-of select="$entity_class_name"/>;
 
 import java.util.List;
 import java.util.Optional;
-public interface <xsl:value-of select="@className"/><xsl:value-of select="$repository_suffix"/> extends PagingAndSortingRepository&lt;<xsl:value-of select="$entityClassName"/>, <xsl:call-template name="pk_type"/>&gt;, CrudRepository&lt;<xsl:value-of select="$entityClassName"/>, <xsl:call-template name="pk_type"/>&gt;<xsl:if test="$meta/filter/column">, JpaSpecificationExecutor&lt;<xsl:value-of select="$entityClassName"/>&gt;</xsl:if> {
+public interface <xsl:value-of select="@className"/><xsl:value-of select="$repository_suffix"/> extends PagingAndSortingRepository&lt;<xsl:value-of select="$entity_class_name"/>, <xsl:call-template name="pk_type"/>&gt;, CrudRepository&lt;<xsl:value-of select="$entity_class_name"/>, <xsl:call-template name="pk_type"/>&gt;<xsl:if test="$meta/filter/column">, JpaSpecificationExecutor&lt;<xsl:value-of select="$entity_class_name"/>&gt;</xsl:if> {
 
-	List &lt;<xsl:value-of select="$entityClassName"/>&gt; findAll();<xsl:for-each select="indexes/entry[value/@isUniq = 'false' or count(value/columns[@isPrimaryKey = 'false']) != 0]">
+	List &lt;<xsl:value-of select="$entity_class_name"/>&gt; findAll();<xsl:for-each select="indexes/entry[value/@isUniq = 'false' or count(value/columns[@isPrimaryKey = 'false']) != 0]">
 		<xsl:choose>
 			<xsl:when test="value/@isUniq = 'true'">
-	Optional&lt;<xsl:value-of select="$entityClassName"/>&gt; findOneBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:when>
+	Optional&lt;<xsl:value-of select="$entity_class_name"/>&gt; findOneBy<xsl:call-template name="methodName"/>(<xsl:call-template name="parameters"/>);</xsl:when>
 		</xsl:choose>
 </xsl:for-each>
-	Page&lt;<xsl:value-of select="$entityClassName"/>&gt; findAll(<xsl:if test="$meta/filter/column">Specification&lt;<xsl:value-of select="$entityClassName"/>&gt; searchSpecification, </xsl:if>Pageable pageable);
+	Page&lt;<xsl:value-of select="$entity_class_name"/>&gt; findAll(<xsl:if test="$meta/filter/column">Specification&lt;<xsl:value-of select="$entity_class_name"/>&gt; searchSpecification, </xsl:if>Pageable pageable);
 
 </xsl:for-each><xsl:value-of select="$save" disable-output-escaping="yes"/>}
 	</xsl:template>
@@ -65,7 +65,7 @@ public interface <xsl:value-of select="@className"/><xsl:value-of select="$repos
     -->
 	<xsl:template name="pk_type">
 		<xsl:choose>
-			<xsl:when test="count(columns/entry/value[@isPrimaryKey = 'true']) &gt; 1"><xsl:value-of select="$entityClassName"/>.<xsl:value-of select="@className"/>Id</xsl:when>
+			<xsl:when test="count(columns/entry/value[@isPrimaryKey = 'true']) &gt; 1"><xsl:value-of select="$entity_class_name"/>.<xsl:value-of select="@className"/>Id</xsl:when>
 			<xsl:otherwise><xsl:value-of select="columns/entry/value[@isPrimaryKey = 'true']/@shortType"/></xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>

@@ -6,21 +6,21 @@
 	<xsl:param name="table"/>
 	<xsl:param name="controller_package"/>
 	<xsl:param name="controller_suffix"/>
-	<xsl:param name="entityClassName"/>
+	<xsl:param name="entity_class_name"/>
 	<xsl:param name="entity_package"/>
-	<xsl:param name="modelClassName"/>
+	<xsl:param name="model_class_name"/>
 	<xsl:param name="model_package"/>
 	<xsl:param name="dtoSuffix"/>
 	<xsl:param name="repository_package"/>
-	<xsl:param name="repositoryClassName"/>
+	<xsl:param name="repository_class_name"/>
 	<xsl:param name="repositorySuffix"/>
-	<xsl:param name="mapperClassName"/>
+	<xsl:param name="mapper_class_name"/>
 	<xsl:param name="mapper_package"/>
 	<xsl:param name="mapperSuffix"/>
-	<xsl:param name="serviceClassName"/>
+	<xsl:param name="service_class_name"/>
 	<xsl:param name="service_package"/>
 	<xsl:param name="serviceSuffix"/>
-	<xsl:param name="metaClassName"/>
+	<xsl:param name="meta_class_name"/>
 	<xsl:param name="meta_package"/>
 	<xsl:param name="meta_suffix"/>
 	<xsl:template match="/dataBaseStructure">package <xsl:value-of select="$controller_package"/>;
@@ -39,12 +39,12 @@ import org.springframework.validation.annotation.Validated;
 import org.c3s.edgo.msdict.server.paginator.PaginatorData;
 <xsl:if test="$meta/roles/controller">import org.springframework.security.access.prepost.PreAuthorize;
 </xsl:if>
-import <xsl:value-of select="$repository_package"/>.<xsl:value-of select="$repositoryClassName"/>;
-import <xsl:value-of select="$model_package"/>.<xsl:value-of select="$modelClassName"/>;
-import <xsl:value-of select="$entity_package"/>.<xsl:value-of select="$entityClassName"/>;
-import <xsl:value-of select="$mapper_package"/>.<xsl:value-of select="$mapperClassName"/>;
-import <xsl:value-of select="$service_package"/>.<xsl:value-of select="$serviceClassName"/>;
-import <xsl:value-of select="$meta_package"/>.<xsl:value-of select="$metaClassName"/>;
+import <xsl:value-of select="$repository_package"/>.<xsl:value-of select="$repository_class_name"/>;
+import <xsl:value-of select="$model_package"/>.<xsl:value-of select="$model_class_name"/>;
+import <xsl:value-of select="$entity_package"/>.<xsl:value-of select="$entity_class_name"/>;
+import <xsl:value-of select="$mapper_package"/>.<xsl:value-of select="$mapper_class_name"/>;
+import <xsl:value-of select="$service_package"/>.<xsl:value-of select="$service_class_name"/>;
+import <xsl:value-of select="$meta_package"/>.<xsl:value-of select="$meta_class_name"/>;
 
 import java.util.List;
 import java.util.Map;
@@ -68,9 +68,9 @@ import jakarta.validation.constraints.Min;
 @RequestMapping("/api/v1/<xsl:value-of select="$mapping"/>")
 public class <xsl:value-of select="@className"/><xsl:value-of select="$controller_suffix"/> {
 	<xsl:variable name="primary" select="columns/entry/value[@isPrimaryKey = 'true']"/>
-	private <xsl:value-of select="$serviceClassName"/> service;
+	private <xsl:value-of select="$service_class_name"/> service;
 	@Autowired
-	public <xsl:value-of select="@className"/><xsl:value-of select="$controller_suffix"/>(<xsl:value-of select="$serviceClassName"/> service) {
+	public <xsl:value-of select="@className"/><xsl:value-of select="$controller_suffix"/>(<xsl:value-of select="$service_class_name"/> service) {
 		this.service = service;
 	}
 	<xsl:variable name="sort" select="$meta/sort/column"/><xsl:variable name="filter" select="$meta/filter/column"/>
@@ -81,7 +81,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$controlle
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;PaginatorData&lt;<xsl:value-of select="$modelClassName"/>&gt;&gt; get<xsl:value-of select="@className"/>s(
+	public ResponseEntity&lt;PaginatorData&lt;<xsl:value-of select="$model_class_name"/>&gt;&gt; get<xsl:value-of select="@className"/>s(
 			@Valid @RequestParam(defaultValue = "1") @Parameter(description="Номер страницы") @Min(1) int page,
 			@Valid @RequestParam(defaultValue = "25") @Parameter(description="Элементов на странице") @Min(1) int size<xsl:if test="$sort">,
 	    	@RequestParam(defaultValue = "") @Parameter(description="Сортировка по полю") String sort</xsl:if><xsl:if test="$filter">,
@@ -96,8 +96,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$controlle
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$metaClassName"/>&gt; get<xsl:value-of select="@className"/>Meta() {
-		<xsl:value-of select="$metaClassName"/> result = new <xsl:value-of select="$metaClassName"/>();
+	public ResponseEntity&lt;<xsl:value-of select="$meta_class_name"/>&gt; get<xsl:value-of select="@className"/>Meta() {
+		<xsl:value-of select="$meta_class_name"/> result = new <xsl:value-of select="$meta_class_name"/>();
 		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
@@ -108,8 +108,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$controlle
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$modelClassName"/>&gt; get<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_parameters"/>) {
-		<xsl:value-of select="$modelClassName"/> result = service.getById(<xsl:call-template name="pk_arguments"/>);
+	public ResponseEntity&lt;<xsl:value-of select="$model_class_name"/>&gt; get<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_parameters"/>) {
+		<xsl:value-of select="$model_class_name"/> result = service.getById(<xsl:call-template name="pk_arguments"/>);
 		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
@@ -120,8 +120,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$controlle
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$modelClassName"/>&gt; create<xsl:value-of select="@className"/>(@RequestBody <xsl:value-of select="$modelClassName"/> dto) {
-		<xsl:value-of select="$modelClassName"/> result = service.create<xsl:value-of select="@className"/>(dto);
+	public ResponseEntity&lt;<xsl:value-of select="$model_class_name"/>&gt; create<xsl:value-of select="@className"/>(@RequestBody <xsl:value-of select="$model_class_name"/> dto) {
+		<xsl:value-of select="$model_class_name"/> result = service.create<xsl:value-of select="@className"/>(dto);
 		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
@@ -132,8 +132,8 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$controlle
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$modelClassName"/>&gt; update<xsl:value-of select="@className"/>(<xsl:call-template name="pk_parameters"/>, @RequestBody <xsl:value-of select="$modelClassName"/> dto) {
-		<xsl:value-of select="$modelClassName"/> result = service.update<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_arguments"/>, dto);
+	public ResponseEntity&lt;<xsl:value-of select="$model_class_name"/>&gt; update<xsl:value-of select="@className"/>(<xsl:call-template name="pk_parameters"/>, @RequestBody <xsl:value-of select="$model_class_name"/> dto) {
+		<xsl:value-of select="$model_class_name"/> result = service.update<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_arguments"/>, dto);
 		return new ResponseEntity&lt;&gt;(result, HttpStatus.OK);
 	}
 
@@ -144,7 +144,7 @@ public class <xsl:value-of select="@className"/><xsl:value-of select="$controlle
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", useReturnTypeSchema = true)
 	})
-	public ResponseEntity&lt;<xsl:value-of select="$modelClassName"/>&gt; delete<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_parameters"/>) {
+	public ResponseEntity&lt;<xsl:value-of select="$model_class_name"/>&gt; delete<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_parameters"/>) {
 		service.delete<xsl:value-of select="@className"/>ById(<xsl:call-template name="pk_arguments"/>);
 		return new ResponseEntity&lt;&gt;(HttpStatus.OK);
 	}
