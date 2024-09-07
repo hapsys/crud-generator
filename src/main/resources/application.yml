@@ -50,12 +50,6 @@ generator:
       packages: org.c3s.edgo.msdict.server.crud.model
       template: src/main/resources/templates/model.xsl
       suffix: Dto
-    api:
-      enable: true
-      packages: org.c3s.edgo.msdict.api
-      template: src/main/resources/templates/model.xsl
-      suffix:
-      root: /Projects/java/ed-spring/ms-dict-static/api/src/main/java
     mapper:
       enable: true
       packages: org.c3s.edgo.msdict.server.crud.mapper
@@ -76,5 +70,18 @@ generator:
       packages: org.c3s.edgo.msdict.server.crud.controller
       template: src/main/resources/templates/controller.xsl
       suffix: Controller
+    api:
+      enable: true
+      packages: org.c3s.edgo.msdict.api
+      template: src/main/resources/templates/model.xsl
+      suffix:
+      root: /Projects/java/ed-spring/ms-dict-static/api/src/main/java
+    client:
+      enable: true
+      packages: org.c3s.edgo.msdict.client
+      template: src/main/resources/templates/client.vm
+      suffix:
+      class-name: MsDictClient
+      root: /Projects/java/ed-spring/ms-dict-static/client/src/main/java
 
 

@@ -4,11 +4,15 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.c3s.generator.command.process.GeneralProcess;
+import org.c3s.generator.command.process.Processes;
 import org.c3s.generator.config.AbstractGeneratorConfigProperties;
 import org.c3s.generator.metadata.DataBaseStructure;
-import org.c3s.generator.metadata.Table;
 import org.c3s.generator.utils.RegexpUtils;
+import org.c3s.transformers.NotApplicableException;
+import org.c3s.transformers.enums.ContentType;
 import org.c3s.transformers.velocity.VelocityTransformer;
+import org.c3s.transformers.xml.XSLTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -18,7 +22,6 @@ import org.c3s.generator.metadata.GeneratorContext;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -29,16 +32,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.*;
 
 @Slf4j
 @Component
 public class CommandProcessor implements CommandLineRunner {
-
-    //@Autowired
-    //private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private Connection connection;
@@ -52,6 +50,8 @@ public class CommandProcessor implements CommandLineRunner {
     @Autowired
     private DataBaseStructure structure;
 
+    private List<org.c3s.transformers.Transformer> transformers = new ArrayList<>();
+
     @Override
     public void run(String... args) throws Exception {
         log.info("Run application!");
@@ -61,6 +61,10 @@ public class CommandProcessor implements CommandLineRunner {
         GeneratorContext.instance.setProperties(properties);
         GeneratorContext.instance.setConnection(connection);
         GeneratorContext.instance.setMetaData(metaData);
+
+        // Register transformers
+        transformers.add(new XSLTransformer());
+        transformers.add(new VelocityTransformer());
 
         // metaData = dataSource.getConnection().getMetaData();
 
@@ -125,9 +129,6 @@ public class CommandProcessor implements CommandLineRunner {
         }};
         // --------------------------------------------------------------------------------------------------
 
-
-        //File pkgDir;
-
         log.info("Configuration size {}",properties.getSteps().size());
         properties.getSteps().forEach((x,y)-> log.info(x));
         properties.getSteps().forEach((x,y)->{
@@ -135,14 +136,25 @@ public class CommandProcessor implements CommandLineRunner {
             props.put(x + "_suffix", y.getSuffix());
         });
 
-        for (String key: properties.getSteps().keySet()) {
-            AbstractGeneratorConfigProperties stepProps = properties.getSteps().get(key);
-            if (stepProps.isSingle()) {
-
+        properties.getSteps().forEach((x,y) -> {
+            Processes process = Processes.getApplicableProcess(y.getTemplate());
+            log.info("Process for {} is {}", x, process);
+            if (process != null) {
+                try {
+                    if (StringUtils.isEmpty(y.getClassName())) {
+                        log.info("Files type for {} is MULTIPLE", x, process);
+                        process.getProcess().processMultiFile(structure, x, properties, props);
+                    } else {
+                        log.info("Files type for {} is SINGLE", x, process);
+                        process.getProcess().processSingleFile(structure, x, properties, props);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             } else {
-                processMultiFilePart(document, key, stepProps, props);
+                log.error("Process not found for template \"{}\"", y.getTemplate());
             }
-        }
+        });
     }
 
     private void parseCommandLine(String[] cmdLine) {
@@ -205,124 +217,4 @@ public class CommandProcessor implements CommandLineRunner {
             }
         }
     }
-
-    private void processMultiFilePart(Document document, String step, AbstractGeneratorConfigProperties stepProps, Map<String, Object> commonProps) throws Exception {
-        VelocityTransformer velocity = new VelocityTransformer();
-        String rootPath = stepProps.getRoot() != null ? stepProps.getRoot():properties.getRoot();
-        //String ext = stepProps.getExtension() == null?"java":stepProps.getExtension();
-        File root = new File(rootPath);
-        root.mkdirs();
-        Transformer transformer = getTransformer(stepProps.getTemplate());
-        Map<String, Object> props = new HashMap<>(commonProps);
-        props.put("step", step);
-        structure.getCatalogs().forEach((catalogName, catalog) -> {
-            props.put("catalogue", catalogName != null?catalogName:"");
-            catalog.getSchemas().forEach((schemaName, schema) -> {
-                props.put("schema", schemaName != null?schemaName:"");
-                String pkg = stepProps.getPackages();
-                File pkgDir;
-                if (pkg != null) {
-                    pkgDir = new File(root, pkg.replace('.', '/'));
-                } else {
-                    pkgDir = root;
-                }
-                pkgDir.mkdirs();
-                schema.getTables().forEach((tableName, table) -> {
-                    props.put("table", tableName);
-                    properties.getSteps().forEach((x,y)->{
-                        props.put(x + "_class_name", table.getClassName() + y.getSuffix());
-                    });
-                    String classFileName;
-                    if (!StringUtils.isEmpty(stepProps.getFileName())) {
-                        try {
-                            classFileName = velocity.transform(props, stepProps.getFileName(), null);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    } else {
-                        classFileName = table.getClassName() + stepProps.getSuffix() + ".java";
-                    }
-                    log.debug("Filename: {}", classFileName);
-                    File classFile = new File(pkgDir, classFileName);
-
-                    if (Objects.nonNull(stepProps.getSavePartStart())) {
-                        String save = "";
-                        String savePartStart = stepProps.getSavePartStart();
-                        log.debug("Check if file contains: {}", savePartStart);
-                        if (classFile.exists() && !savePartStart.isEmpty()) {
-                            try {
-                                String ctx = readFile(classFile);
-                                log.debug("File contents: {}", ctx);
-                                List<String> matches = new ArrayList<>();
-                                if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
-                                    //log.debug("{}", matches);
-                                    save = matches.get(1);
-                                }
-                            } catch (IOException e) {
-                                log.error(e.getMessage(), e);
-                            }
-                        }
-                        props.put("save", save);
-                    }
-                    // Save result
-                    try (PrintWriter writer = new PrintWriter(classFile)) {
-                        String result = transformXML(document, transformer, props);
-                        writer.print(result);
-                        log.debug("{}", result);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    }
-                });
-            });
-        });
-    }
-
-    private Transformer getTransformer(String fileName) throws Exception {
-        Document xsl = null;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder db = factory.newDocumentBuilder();
-        xsl = db.parse(new File(fileName));
-
-        DOMSource xslSource = new DOMSource(xsl);
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer(xslSource);
-        //transformer.setOutputProperty(OutputKeys.ENCODING,"UTF-8");
-
-        return transformer;
-    }
-
-    private String transformXML(Document document, Transformer transformer, Map<String, Object> parameters) throws Exception {
-        String result = null;
-            DOMSource domSource = new DOMSource(document);
-            /*
-             * Set Parameters
-             */
-            if (parameters != null) {
-                log.debug("Transform parameters: {}", parameters);
-                for (String param_name : parameters.keySet()) {
-                    //log.debug(param_name + " {" + parameters.get(param_name) + "}");
-                    transformer.setParameter(param_name, parameters.get(param_name));
-                }
-            }
-            /*
-             * Transformation
-             */
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            StreamResult streamresult = new StreamResult(buffer);
-            transformer.transform(domSource, streamresult);
-            //result = buffer.toString(transformer.getOutputProperty(OutputKeys.ENCODING));
-            result = buffer.toString();
-
-        return result;
-    }
-
-    private String readFile(File file) throws IOException {
-        Path path = Paths.get(file.getPath());
-        List<String> lines = Files.readAllLines(path);
-        //String result = lines.size() > 0? lines.get(0):"";
-        String result = String.join("\n", lines.toArray(new String[]{}));
-        return result;
-    }
-
 }

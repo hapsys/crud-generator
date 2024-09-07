@@ -30,7 +30,9 @@
 -->
         </defaults>
         <cache regexp_="~stations~isu">
+            <!--
             <table>systems</table>
+            -->
             <table>stations</table>
             <table>bodies</table>
         </cache>
@@ -269,11 +271,16 @@
         </filter>
     </table>
     <table name="systems" cache="true">
+        <controller>
+            <mapping>airports</mapping>
+        </controller>
         <sort>
             <column name="name" default="true"/>
         </sort>
+        <!--
         <filter>
             <column name="name"/>
         </filter>
+        -->
     </table>
 </meta-data>

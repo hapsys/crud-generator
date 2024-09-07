@@ -24,8 +24,6 @@ public class GeneratorConfigProperties {
 
     @Data
     public static class Tables {
-        //private String[] include;
-        //private String[] exclude;
         private List<String> include;
         private List<String> exclude;
     }

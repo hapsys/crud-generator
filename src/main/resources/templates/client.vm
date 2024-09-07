@@ -1,0 +1,52 @@
+package $parameters.client_package;
+
+import ${parameters.api_package}.*;
+import org.c3s.edgo.msdict.client.paging.PageEntity;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Map;
+
+#set($doc = $xml.read("./src/main/resources/templates/meta-info.xml"))
+#[[@FeignClient(name = "ms-dict-client", url = "${client.ms-dict-client.url}")]]#
+public interface $parameters.class_name {
+#foreach($catalog in $data.getCatalogs())
+    #foreach($schema in $catalog.getSchemas())
+        #foreach($table in $schema.getTables())
+
+    // $table.getComment()
+            #set($sort = $doc.find("table[@name='${table.getName()}']/sort"))
+            #set($filter = $doc.find("table[@name='${table.getName()}']/filter"))
+            #set($mapping = $doc.find("table[@name='${table.getName()}']/controller/mapping/text()"))
+            #if(!$mapping) #set($mapping = $table.getName()) #end
+            #set($pkmap = "")
+            #set($pkpar = "")
+            #foreach($column in $table.getColumns())
+                #if($column.isPrimaryKey())
+                    #set($pkmap = "${pkmap}/{$column.getName()}")
+                    #if($pkpar != "")
+                        #set($pkpar = "$pkpar, ")
+                    #end
+                    #set($pkpar = "$pkpar@PathVariable(""$column.getName()"") $column.getShortType() $column.getMethodName()")
+                #end
+            #end
+
+    @RequestMapping(method = RequestMethod.GET, value = "/$mapping")
+    PageEntity<$table.getClassName()$parameters.api_suffix> get${table.getClassName()}(@RequestParam("page") int page, @RequestParam("size") int size#if($sort), @RequestParam("sort") String sort#end#if($filter), @RequestParam Map<String, String> filter#end);
+    @RequestMapping(method = RequestMethod.GET, value = "/$mapping$pkmap")
+    $table.getClassName()$parameters.api_suffix get${table.getClassName()}($pkpar);
+    @RequestMapping(method = RequestMethod.POST, value = "/$mapping")
+    $table.getClassName()$parameters.api_suffix create${table.getClassName()}($table.getClassName()$parameters.api_suffix data);
+    @RequestMapping(method = RequestMethod.PUT, value = "/$mapping$pkmap")
+    $table.getClassName()$parameters.api_suffix update${table.getClassName()}($pkpar, $table.getClassName()$parameters.api_suffix data);
+    @RequestMapping(method = RequestMethod.DELETE, value = "/$mapping$pkmap")
+    $table.getClassName()$parameters.api_suffix delete${table.getClassName()}($pkpar);
+        #end
+    #end
+#end
+}
+
