@@ -1,62 +1,58 @@
-# CRUD generator for aeroflot services
+# Class generator based on DatabaseMetadata
 
-Генерация основных классов для обеспечения CRUD манипуляцией с сущностями БД на основе мета-данных таблиц БД и/или
-дополнительного описания.
+### General description
 
-### Пояснения
+Using DatabaseMetadata for the DB, you can get the structure of tables, etc. Based on this, you can generate a number of classes to ensure work with the DB or accompanying process classes. For example: JPA entities, repositories, services, controllers, etc.  
 
-Генерация происходит в 6 этапов:
+#### In examples:
 
-1. Генерация классов сущностей в БД (шаг entities)
-2. Генерация интерфейсов репозитария (шаг repository)
-3. Генерация классов транспорта DTO (шаг model)
-4. Генерация классов отображения (шаг mapping)
-5. Генерация классов сервисного слоя (шаг service)
-6. Генерация контроллеров манипуляции с сущностями (шаг controller)
+Generating basic classes to provide CRUD manipulation of DB entities based on DB table metadata and/or additional description (view https://gitlab.ed-go.xyz/ed-go/backend/services/ms-dict and default config)
 
-#### Конфигурация
+### Explanations
 
-Глобальные праметры конфигурации:
+Generation occurs according to the steps described in the configuration. Each step can generate either one common file for all tables or a separate file is generated for each table. 
 
-| Параметр                 | Назначение                                                                                                                                              |
-|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| generator.root           | Путь для генерации получившихся классов.                                                                                                                |
-| generator.export         | Путь XML файла для сохранения структуры. Если не указан или пустой структура не сохряняется.                                                            |
-| generator.schemas        | Схемы в БД для которых генерируется метадата.                                                                                                           |
-| generator.schema-packages| Если поределено, то для каждой схемы генерируется свой под-пакет. Параметры внутри <имя схемы>: значение. По умолчанию имя подпакета равно имени схемы. |
-| generator.tables.include | Имена таблиц (через запятую), для которых будет генерироваться метадата. Пусто: все.                                                                    |
-| generator.tables.exclude | Имена таблиц (через запятую), которые будут исключены из генерации метадаты.                                                                            |
-| generator.entities       | Секция конфигурации генерации entities (см. поянения).                                                                                                  |
-| generator.repository       | Секция конфигурации генерации repository (см. поянения).                                                                                                |
-| generator.model       | Секция конфигурации генерации model (см. поянения).                                                                                                     |
-| generator.mapping       | Секция конфигурации генерации mapping (см. поянения).                                                                                                   |
-| generator.service       | Секция конфигурации генерации service (см. поянения).                                                                                                   |
-| generator.controller       | Секция конфигурации генерации controller (см. поянения).                                                                                                |
+#### Configuration
 
-Для каждой секции применяются следующие параметры:
+General configuration parameters:
 
-| Параметр | Тип    | Назначение                                                                          |
-|----------|--------|-------------------------------------------------------------------------------------|
-| enable | bool   | Ключение генерации классов соотвествующей секции.                                   |
-| packages | String | Название пакета генерируемых классов.                                               |
-| template | String | XSLT шаблон, используемый ждя генерации классов.                                    |
-| suffix | String | Суффикс генерируемых классов.                                                       |
-| generate-data | bool   | Генерировать доп. класс.                                                            |
-| suffix-data | String | Суффикс доп. генерируемых классов.                                                  |
-| save-part-start | String | Регулярное выражение, для обнаруженя существующего дополнительного кода (костыль). |
+| Parameter                 | Purpose                                                                                                     |
+|---------------------------|-------------------------------------------------------------------------------------------------------------|
+| generator.root            | The default path for generating the resulting files.                                                        |
+| generator.export          | Path to XML file to save structure (just for debugging). If not specified or empty, structure is not saved. |
+| generator.catalog         | Catalogs in the database for which metadata is generated (for example, for MySQL).                          |
+| generator.schemas         | Schemas in the database for which metadata is generated (for example, for PostgreSQL).                      |
+| generator.schema-packages | If defined, a sub-package is generated for each scheme. Parameters inside \<schemename>: value.             |
+| generator.tables.include  | List of tables (comma separated) for which metadata will be generated. Empty: all.                          |
+| generator.tables.exclude  | List of tables (comma separated) to be excluded from metadata generation.                                   |
+| generator.properties      | Additional parameters passed to all generation steps (\<parameter>: \<value>).                              |
+| generator.steps           | Generation Step Description Section (\<step>: \<generation step configuration>).                            |
+
+For each step section the following parameters apply (\<generation step configuration>):
+
+| Parameter                               | Type   | Purpose                                                                                       |
+|----------------------------------------|--------|--------------------------------------------------------------------------------------------------|
+| generator.steps.<step>.enable          | bool   | Turning off generation of classes of the corresponding section.                                                |
+| generator.steps.<step>.root            | String | Redefining the path for generating the resulting files.                                          |
+| generator.steps.<step>.packages        | String | The name of the package of generated classes.                                                    |
+| generator.steps.<step>.class-name      | String | (!!!) If specified, one common file will be generated for all processed tables.         |
+| generator.steps.<step>.template        | String | XSLT/Velocity template file used to generate classes.                                  |
+| generator.steps.<step>.suffix          | String | Suffix for generated classes.                                                                    |
+| generator.steps.<step>.file-name       | String | Velocity string template for file generation name (default: \${class\_name}${suffix}.java) |
+| generator.steps.<step>.save-part-start | String | Regular expression to detect existing additional code (cheat).               |
 
 
-#### Пояснения
+#### Explanations
 
-1. Чтобы лишний раз не перекомпилировать генератор, пути всех шаблонов используют пути OS.
-2. Дополнительно, в качестве примера, в проекте есть XML файл **meta-info.xml**, который покдлючается к шаблонам XSLT и может нести дополнительную мета-информацию для генерации. 
+1. To avoid recompiling the generator again, all template paths use OS paths.
+2. Additionally, as an example, the project contains an XML file **meta-info.xml**, which is connected to XSLT templates and can carry additional meta-information for generation. 
 
-### Компиляция и запуск
+### Compilation and launch
 
-Проект построен на Spring Boot 3.0.2 со сброщиком Maven, соответственно скоппилировать и запустить его можно строкой:
+The project is built on Spring Boot 3.x.x with the Maven builder, so you can compile and run it with the line:
 
 **mvn spring-boot:run**
 
-### Дополнения
+### Additional
 
-(опишу позже)
+(later)

@@ -87,10 +87,19 @@
             <version>3.1</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!--
         <dependency>
             <groupId>org.c3s</groupId>
             <artifactId>transformers</artifactId>
             <version>0.0.1-20240817.144342-5</version>
+        </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.c3s</groupId>
+            <artifactId>transformers</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -116,5 +125,16 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>eg-go-nexus</id>
+            <name>ED_GO nexus repo</name>
+            <url>https://nexus.ed-go.xyz/repository/maven-public/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>

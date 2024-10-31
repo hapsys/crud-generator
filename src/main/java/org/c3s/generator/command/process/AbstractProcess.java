@@ -2,13 +2,12 @@ package org.c3s.generator.command.process;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.c3s.generator.config.AbstractGeneratorConfigProperties;
+import org.c3s.generator.config.properties.AbstractGeneratorConfigProperties;
 import org.c3s.generator.config.properties.GeneratorConfigProperties;
 import org.c3s.generator.metadata.DataBaseStructure;
 import org.c3s.generator.utils.RegexpUtils;
 import org.c3s.transformers.velocity.VelocityTransformer;
 
-import javax.xml.transform.Transformer;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;

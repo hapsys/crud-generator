@@ -1,4 +1,4 @@
-package org.c3s.generator.config;
+package org.c3s.generator.config.properties;
 
 import lombok.Data;
 

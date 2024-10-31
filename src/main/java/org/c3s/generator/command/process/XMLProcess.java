@@ -2,11 +2,7 @@ package org.c3s.generator.command.process;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
-import org.apache.commons.lang3.StringUtils;
-import org.c3s.generator.config.AbstractGeneratorConfigProperties;
-import org.c3s.generator.config.properties.GeneratorConfigProperties;
 import org.c3s.generator.metadata.DataBaseStructure;
-import org.c3s.generator.utils.RegexpUtils;
 import org.c3s.transformers.Transformer;
 import org.c3s.transformers.xml.XSLTransformer;
 import org.w3c.dom.Document;

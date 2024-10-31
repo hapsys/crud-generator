@@ -2,14 +2,10 @@ spring:
   main:
     web-application-type: none
   datasource:
-#    driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://${URL-DB:localhost}:${PORT-DB:5432}/${DB-NAME:postgres-cargo}?reWriteBatchedInserts=true
-#    username: ${POSTGRES-USER:postgres}
-#    password: ${POSTGRES-PASSWORD:postgres}
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_ADDR:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DB_NAME:ed-go}?reWriteBatchedInserts=true&useSSL=false
-    username: ${POSTGRES_USER:root}
-    password: ${POSTGRES_PASSWORD:root}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
     auto-commit: false
     maximumPoolSize: 10
     hikari:
@@ -20,15 +16,15 @@ spring:
       connection-timeout: 360000
       validation-timeout: 360000
 
+logging:
+  level:
+    org.c3s.generator: DEBUG
+
+
 generator:
   root: /Projects/java/ed-spring/ms-dict-static/server/src/main/java
   export: /structure.xml
   catalog: ed-go
-  #schemas: msdict
-  #schemas:
-  #schema-packages:
-  # msdict: msdict
-  # msdictdynamic: cargo
   tables:
     include: #systems, stations
     exclude: #system_faction_pending_states, system_faction_recovery_states
