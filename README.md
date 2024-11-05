@@ -31,15 +31,15 @@ General configuration parameters:
 For each step section the following parameters apply (\<generation step configuration>):
 
 | Parameter                               | Type   | Purpose                                                                                       |
-|----------------------------------------|--------|--------------------------------------------------------------------------------------------------|
-| generator.steps.<step>.enable          | bool   | Turning off generation of classes of the corresponding section.                                                |
-| generator.steps.<step>.root            | String | Redefining the path for generating the resulting files.                                          |
-| generator.steps.<step>.packages        | String | The name of the package of generated classes.                                                    |
-| generator.steps.<step>.class-name      | String | (!!!) If specified, one common file will be generated for all processed tables.         |
-| generator.steps.<step>.template        | String | XSLT/Velocity template file used to generate classes.                                  |
-| generator.steps.<step>.suffix          | String | Suffix for generated classes.                                                                    |
-| generator.steps.<step>.file-name       | String | Velocity string template for file generation name (default: \${class\_name}${suffix}.java) |
-| generator.steps.<step>.save-part-start | String | Regular expression to detect existing additional code (cheat).               |
+|-----------------------------------------|--------|--------------------------------------------------------------------------------------------------|
+| generator.steps.\<step>.enable          | bool   | Turning off generation of classes of the corresponding section.                                                |
+| generator.steps.\<step>.root            | String | Redefining the path for generating the resulting files.                                          |
+| generator.steps.\<step>.packages        | String | The name of the package of generated classes.                                                    |
+| generator.steps.\<step>.class-name      | String | (!!!) If specified, one common file will be generated for all processed tables.         |
+| generator.steps.\<step>.template        | String | XSLT/Velocity template file used to generate classes.                                  |
+| generator.steps.\<step>.suffix          | String | Suffix for generated classes.                                                                    |
+| generator.steps.\<step>.file-name       | String | Velocity string template for file generation name (default: \${class\_name}${suffix}.java) |
+| generator.steps.\<step>.save-part-start | String | Regular expression to detect existing additional code (cheat).               |
 
 
 #### Explanations
