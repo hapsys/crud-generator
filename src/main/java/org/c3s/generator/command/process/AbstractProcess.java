@@ -70,7 +70,7 @@ public abstract class AbstractProcess implements GeneralProcess {
                         if (classFile.exists() && !savePartStart.isEmpty()) {
                             try {
                                 String ctx = readFile(classFile);
-                                log.debug("File contents: {}", ctx);
+                                log.trace("File contents: {}", ctx);
                                 List<String> matches = new ArrayList<>();
                                 if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
                                     //log.debug("{}", matches);
@@ -86,7 +86,7 @@ public abstract class AbstractProcess implements GeneralProcess {
                     try (PrintWriter writer = new PrintWriter(classFile)) {
                         String result = transform(structure, template, props);
                         writer.print(result);
-                        log.debug("{}", result);
+                        log.trace("{}", result);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     }
@@ -148,7 +148,7 @@ public abstract class AbstractProcess implements GeneralProcess {
             if (classFile.exists() && !savePartStart.isEmpty()) {
                 try {
                     String ctx = readFile(classFile);
-                    log.debug("File contents: {}", ctx);
+                    log.trace("File contents: {}", ctx);
                     List<String> matches = new ArrayList<>();
                     if (RegexpUtils.preg_match("~^.+(" + savePartStart + ".+)\\}[^\\}]*$~isu", ctx, matches)) {
                         //log.debug("{}", matches);
@@ -165,7 +165,7 @@ public abstract class AbstractProcess implements GeneralProcess {
         try (PrintWriter writer = new PrintWriter(classFile)) {
             String result = transform(structure, template, props);
             writer.print(result);
-            log.debug("{}", result);
+            log.trace("{}", result);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

@@ -27,7 +27,7 @@ import java.util.Map;
 public class Catalog {
 
     @XmlTransient
-    private String[] props;
+    private List<String> props;
 
     @XmlTransient
     private DataSource dataSource;
